@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<application xmlns="http://ns.adobe.com/air/application/3.7">
+	
+	<id>NewProject</id> 
+	<versionNumber>1.0</versionNumber> 
+	<filename>NewProject</filename> 
+	
+	<name>New Project</name> 
+	<description></description> 
+	<copyright></copyright> 
+	
+	<initialWindow> 
+		<title>Fluid Solver Test</title> 
+		<content>FluidSolverTest.swf</content> 
+		<systemChrome>standard</systemChrome> 
+		<transparent>false</transparent> 
+		<visible>true</visible> 
+		<minimizable>true</minimizable> 
+		<maximizable>true</maximizable> 
+	    <renderMode>direct</renderMode>
+	    <depthAndStencil>true</depthAndStencil>
+	</initialWindow> 
+	
+	<renderMode>direct</renderMode> 
+	<!-- 
+	More options:
+	http://livedocs.adobe.com/flex/3/html/File_formats_1.html#1043413
+	-->
+</application>
