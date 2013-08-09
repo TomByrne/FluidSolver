@@ -85,7 +85,6 @@ double *curl_abs;
 double *curl_orig;
 
 int *fluidsImage;
-int *particlesImage;
 
 int particleEmitterCount;
 double nextEmitterIndex;
@@ -251,7 +250,6 @@ void destroy()
 {
 	if(fluidsImage)	free(fluidsImage);
 	if(particles)	free(particles);
-	if(particlesImage) free(particlesImage);
 	if(particleEmitters)	free(particleEmitters);
 
 	if(particles2)	free(particles2);
@@ -297,7 +295,6 @@ void reset()
 
 	fluidsImage = (int*)calloc( gridW*gridH, sizeof(int) );
 
-	particlesImage = (int*)calloc( screenW*screenH, sizeof(int) );
 	particleEmitters = (double*)calloc( PARTICLES_MAX_EMITTERS*8, sizeof(double) );
 	particles = (float*)calloc( _maxParticles*PARTICLE_MEM, sizeof(float) );
 	particles2 = (float*)calloc( _maxParticles*PARTICLE_MEM, sizeof(float) );
@@ -313,7 +310,6 @@ void reset()
 
 	nextEmitterIndex = 0;
 	particleEmitterCount = 0;
-	printf("reset\n");
 
 	srand( (unsigned)time(NULL) );
 }
@@ -328,7 +324,7 @@ void drawFluidImage()
 	rp = r+gridW2+1;
 	gp = g+gridW2+1;
 	bp = b+gridW2+1;
-
+	
 	for( i = 1; i < gridH+1; i++ )
 	{
 		for( j = 1; j < gridW+1; j++ )
@@ -1086,10 +1082,6 @@ void setForceAndColour(double tx, double ty, double dx, double dy, float r, floa
 	drawMode = mode;
 }*/
 
-int* getParticleImagePos()
-{
-	return particlesImage;
-}
 double* getParticleEmittersPos()
 {
 	return particleEmitters;
@@ -1111,28 +1103,6 @@ int* getFluidImagePos()
 {
 	return fluidsImage;
 }
-
-double* getROldPos()
-{
-	return rOld;
-}
-double* getGOldPos()
-{
-	return gOld;
-}
-double* getBOldPos()
-{
-	return bOld;
-}
-double* getUOldPos()
-{
-	return uOld;
-}
-double* getVOldPos()
-{
-	return vOld;
-}
-
 void setWrap(int wrapX, int wrapY)
 {
 	wrap_x = wrapX;

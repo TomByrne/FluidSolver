@@ -33,7 +33,7 @@ package
 			view.scene.addChild(renderer.display);
 			renderer.display.scale(1.9);
 			
-			super(new FluidSolverWorkerIO(), renderer);
+			super(new FluidSolverWorkerIO(), renderer, false, false, true);
 			
 			addChild(new AwayStats());
 		}

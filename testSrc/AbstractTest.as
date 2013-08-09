@@ -35,7 +35,12 @@ package
 		private var _fluidRenderer:IFluidRenderer;
 		private var _lastMousePoint:Point;
 		
-		public function AbstractTest(solver:IFluidSolver, renderer:IFluidRenderer):void {
+		private var _renderFluid:Boolean;
+		private var _doParticles:Boolean;
+		
+		private var _isInvalid:Boolean;
+		
+		public function AbstractTest(solver:IFluidSolver, renderer:IFluidRenderer, renderFluid:Boolean, isRGB:Boolean, doParticles:Boolean):void {
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
@@ -46,8 +51,11 @@ package
 			
 			_fluidRenderer = renderer;
 			
-			_fluidSolver.setFPS(60);
-			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, false, false, true, PARTICLES, 0,  onFluidSetup);
+			_renderFluid = renderFluid;
+			_doParticles = doParticles;
+			
+			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES, 0,  onFluidSetup, fluidUpdate);
+			_fluidSolver.setFPS(30);
 			_fluidSolver.setGravity(0, -0.05);
 			
 			// set up the jet stream
@@ -65,8 +73,14 @@ package
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		}
+		protected function fluidUpdate():void {
+			_isInvalid = true;
+		}
 		
-		protected function onEnterFrame(e:Event):void{
+		protected function onEnterFrame(e:Event):void {
+			if (!_isInvalid) return;
+			
+			_isInvalid = false;
 			_fluidRenderer.update();
 		}
 		
@@ -75,11 +89,17 @@ package
 		{
 			var normX:Number = mouseX / RENDER_W;
 			var normY:Number = mouseY / RENDER_H;
+			
 			var velX:Number = (mouseX - _lastMousePoint.x) / RENDER_W;
 			var velY:Number = (mouseY - _lastMousePoint.y) / RENDER_H;
-
-			_fluidSolver.setForce(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
-			_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 30, 30, 0.3, 0.7, 0.9);
+			if(_renderFluid){
+				_fluidSolver.setForceAndColour(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER, 1000, 30, 30);
+			}else {
+				_fluidSolver.setForce(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
+			}
+			if(_doParticles){
+				_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 30, 30, 0.3, 0.7, 0.9);
+			}
 			
 			_lastMousePoint.x = mouseX;
 			_lastMousePoint.y = mouseY;

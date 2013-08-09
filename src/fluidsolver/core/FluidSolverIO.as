@@ -6,6 +6,7 @@ package fluidsolver.core
 	import flash.utils.Endian;
 	import flash.utils.setTimeout;
 	import flash.utils.Timer;
+	import flash.utils.getTimer;
 	import fluidsolver.core.crossbridge.FluidSolverCrossbridge;
 	/**
 	 * ...
@@ -15,6 +16,8 @@ package fluidsolver.core
 	{
 		private var _updateTimer:Timer;
 		private var _isSetup:Boolean;
+		private var _lastTime:int;
+		private var _updateHandler:Function;
 		
 		public function FluidSolverIO() 
 		{
@@ -27,19 +30,30 @@ package fluidsolver.core
 			}
 			_updateTimer = new Timer(1000 / value, 0);
 			_updateTimer.addEventListener(TimerEvent.TIMER, onUpdateTimer);
-			if (_isSetup)_updateTimer.start();
-			else _updateTimer.stop();
+			if (_isSetup) {
+				_lastTime = getTimer();
+				_updateTimer.start();
+			}else {
+				_updateTimer.stop();
+			}
 			
 			if(returnHandler!=null)returnHandler();
 		}
+		
 		private function onUpdateTimer(e:TimerEvent):void {
-			FluidSolverCrossbridge.updateSolver(0.5);
+			var time:int = getTimer();
+			FluidSolverCrossbridge.updateSolver((time-_lastTime)/100);
+			_lastTime = time;
+			if (_updateHandler != null)_updateHandler();
 		}
-		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int=5000, cullAlpha:Number=0, returnHandler:Function=null):void {
+		
+		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int=5000, cullAlpha:Number=0, returnHandler:Function=null, updateHandler:Function=null):void {
 			FluidSolverCrossbridge.setupSolver(gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, maxParticles, cullAlpha);
 			_isSetup = true;
-			if(returnHandler!=null)returnHandler();
+			if (returnHandler != null) returnHandler();
+			_lastTime = getTimer();
 			_updateTimer.start();
+			_updateHandler = updateHandler;
 		}
 		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function = null):void {
 			var ret:int = FluidSolverCrossbridge.addParticleEmitter(x, y, rate, xSpread, ySpread, alphVar, massVar, decay);
@@ -93,27 +107,8 @@ package fluidsolver.core
 		public function get particleEmittersPos():int {
 			return FluidSolverCrossbridge.getParticleEmittersPos();
 		}
-		public function get particleImagePos():int {
-			return FluidSolverCrossbridge.getParticleImagePos();
-		}
 		public function get fluidImagePos():int {
 			return FluidSolverCrossbridge.getFluidImagePos();
-		}
-		
-		public function get rOldPos():int {
-			return FluidSolverCrossbridge.getROldPos();
-		}
-		public function get gOldPos():int {
-			return FluidSolverCrossbridge.getGOldPos();
-		}
-		public function get bOldPos():int {
-			return FluidSolverCrossbridge.getBOldPos();
-		}
-		public function get uOldPos():int {
-			return FluidSolverCrossbridge.getUOldPos();
-		}
-		public function get vOldPos():int {
-			return FluidSolverCrossbridge.getVOldPos();
 		}
 		/*
 

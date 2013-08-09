@@ -45,14 +45,7 @@ int* getParticlesCountPos();
 int* getMaxParticlesPos();
 double* getParticleEmittersPos();
 float* getParticlesDataPos();
-int* getParticleImagePos();
 int* getFluidImagePos();
-
-double* getROldPos();
-double* getGOldPos();
-double* getBOldPos();
-double* getUOldPos();
-double* getVOldPos();
 
 //-----------------------------------------------------------------------------
 

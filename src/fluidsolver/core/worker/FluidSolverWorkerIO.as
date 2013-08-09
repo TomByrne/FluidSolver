@@ -24,11 +24,13 @@ package  fluidsolver.core.worker
 		private var mainToBack:MessageChannel;
 		private var backToMain:MessageChannel;
 		
-		public var isInited:Boolean;
+		public var _isInited:Boolean;
 		private var _lastHandlerId:int = 0;
 		private var _returnHandlerLookup:Dictionary = new Dictionary();
 		
 		private var _pendingCalls:Array;
+		
+		private var _updateHandler:Function;
 		
 		public function FluidSolverWorkerIO() 
 		{
@@ -40,6 +42,7 @@ package  fluidsolver.core.worker
 			backToMain.addEventListener(Event.CHANNEL_MESSAGE, onBackToMain, false, 0, true);
 			worker.setSharedProperty("backToMain", backToMain);
 			worker.setSharedProperty("mainToBack", mainToBack);
+			worker.setSharedProperty("setFPS", setFPS);
 			
 			worker.start();
 			
@@ -48,7 +51,8 @@ package  fluidsolver.core.worker
 		public function setFPS(value:int, returnHandler:Function=null):void {
 			appendCall("setFPS",[value],registerCall(returnHandler));
 		}
-		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int=5000, cullAlpha:Number=0, returnHandler:Function=null):void {
+		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int = 5000, cullAlpha:Number = 0, returnHandler:Function = null, updateHandler:Function = null):void {
+			_updateHandler = updateHandler;
 			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid, isRGB, doParticles, maxParticles, cullAlpha],registerCall(returnHandler));
 		}
 		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
@@ -78,23 +82,15 @@ package  fluidsolver.core.worker
 		
 		private function appendCall(methodName:String, args:Array, returnId:int):void {
 			var callObj:Object = { meth:methodName, args:args, retId:returnId };
-			if (isInited && !collateCalls) {
+			if (_isInited && !collateCalls) {
 				mainToBack.send({calls:[callObj]});
 			}else {
 				if (!_pendingCalls)_pendingCalls = [];
 				_pendingCalls.push(callObj);
-				
-				/*if(!_pendingCalls[methodName]){
-					_pendingCalls[methodName] = args;
-				}else if (_pendingCalls[methodName][0] is Array) {
-					_pendingCalls[methodName].push(args);
-				}else{
-					_pendingCalls[methodName] = [_pendingCalls[methodName],args];
-				}*/
 			}
 		}
 		public function executeCalls():void {
-			if (isInited)_executeCalls();
+			if (_isInited)_executeCalls();
 		}
 		private function _executeCalls():void {
 			if (_pendingCalls) {
@@ -112,22 +108,17 @@ package  fluidsolver.core.worker
 			}
 		}
 		
-		/*public function send(object:Object):void
-		{
-			mainToBack.send(object);
-		}*/
-		
 		protected function onBackToMain(event:Event):void 
 		{
-			//var returnObject:* = MessageChannel(event.target).receive();
-			//workerFinished.dispatch(returnObject);
-			
 			if (!backToMain.messageAvailable) return;
 			var returnObject:Object = backToMain.receive();
 			
-			if (!isInited) {
-				isInited = true;
+			if (!_isInited) {
+				_isInited = true;
 				_executeCalls();
+			}
+			if (returnObject.msg == "update" && _updateHandler!=null) {
+				_updateHandler();
 			}
 			
 			var returns:Object = returnObject.returns;
@@ -186,27 +177,8 @@ package  fluidsolver.core.worker
 		public function get particleEmittersPos():int {
 			return worker.getSharedProperty("particleEmittersPos");
 		}
-		public function get particleImagePos():int {
-			return worker.getSharedProperty("particleImagePos");
-		}
 		public function get fluidImagePos():int {
 			return worker.getSharedProperty("fluidImagePos");
-		}
-		
-		public function get rOldPos():int {
-			return worker.getSharedProperty("rOldPos");
-		}
-		public function get gOldPos():int {
-			return worker.getSharedProperty("gOldPos");
-		}
-		public function get bOldPos():int {
-			return worker.getSharedProperty("bOldPos");
-		}
-		public function get uOldPos():int {
-			return worker.getSharedProperty("uOldPos");
-		}
-		public function get vOldPos():int {
-			return worker.getSharedProperty("vOldPos");
 		}
 		/*
 

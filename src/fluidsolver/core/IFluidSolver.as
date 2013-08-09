@@ -9,7 +9,7 @@ package fluidsolver.core
 	public interface IFluidSolver 
 	{
 		function setFPS(value:int, returnHandler:Function = null):void;
-		function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int = 5000, cullAlpha:Number = 0, returnHandler:Function = null):void;
+		function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int = 5000, cullAlpha:Number = 0, returnHandler:Function = null, updateHandler:Function=null):void;
 		
 		/**
 		 * 
@@ -30,14 +30,7 @@ package fluidsolver.core
 		function get particlesDataPos():int;
 		function get maxParticlesPos():int;
 		function get particleEmittersPos():int;
-		function get particleImagePos():int;
 		function get fluidImagePos():int;
-		
-		function get rOldPos():int;
-		function get gOldPos():int;
-		function get bOldPos():int;
-		function get uOldPos():int;
-		function get vOldPos():int;
 	}
 	
 }

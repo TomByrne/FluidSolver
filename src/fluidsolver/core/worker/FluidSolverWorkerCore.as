@@ -7,6 +7,7 @@ package  fluidsolver.core.worker
 	import flash.system.Worker;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
+	import flash.utils.getTimer;
 	import fluidsolver.core.crossbridge.CModule;
 	import fluidsolver.core.crossbridge.FluidSolverCrossbridge;
 	import fluidsolver.utils.ConsoleProxy;
@@ -18,46 +19,49 @@ package  fluidsolver.core.worker
 	public class FluidSolverWorkerCore extends Sprite
 	{
 		
-		private var worker:Worker;
-		private var mainToBack:MessageChannel;
-		private var backToMain:MessageChannel;
-		
-		private var sentObject:*;
+		private var _worker:Worker;
+		private var _mainToBack:MessageChannel;
+		private var _backToMain:MessageChannel;
+		private var _lastTime:int;
 		
 		public function FluidSolverWorkerCore():void 
 		{
 			
 			CModule.vfs.console = new ConsoleProxy(log);
 			
-			worker = Worker.current;
+			_worker = Worker.current;
 			
-			mainToBack = worker.getSharedProperty("mainToBack");
-			if (mainToBack) {
-				mainToBack.addEventListener(Event.CHANNEL_MESSAGE, onMainToBack);
+			_mainToBack = _worker.getSharedProperty("mainToBack");
+			if (_mainToBack) {
+				_mainToBack.addEventListener(Event.CHANNEL_MESSAGE, on_mainToBack);
 			}
 			
-			backToMain = worker.getSharedProperty("backToMain");
-			
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-		}
-		protected function onEnterFrame(event:Event):void {
-			FluidSolverCrossbridge.updateSolver(0.5);
+			_backToMain = _worker.getSharedProperty("backToMain");
 			
 			var returnObject:Object = new Object();
-			returnObject.msg = "RETURN";
-			if (backToMain) backToMain.send(returnObject);
+			returnObject.msg = "ready";
+			_backToMain.send(returnObject);
+		}
+		protected function onEnterFrame(event:Event):void {
+			var time:int = getTimer();
+			FluidSolverCrossbridge.updateSolver((time-_lastTime)/100);
+			_lastTime = time;
+			
+			var returnObject:Object = new Object();
+			returnObject.msg = "update";
+			_backToMain.send(returnObject);
 		}
 		
 		protected function log(... params):void
 		{
 			trace.apply(null, params);
-			if(mainToBack)backToMain.send({calls: {"trace":params}});
+			_backToMain.send({calls: {"trace":params}});
 		}
 		
-		protected function onMainToBack(event:Event):void {
+		protected function on_mainToBack(event:Event):void {
 			try{
-				if (!mainToBack.messageAvailable) return;
-				var sentObject:Object = mainToBack.receive();
+				if (!_mainToBack.messageAvailable) return;
+				var sentObject:Object = _mainToBack.receive();
 				
 				var calls:Object = sentObject.calls;
 				if (calls) {
@@ -71,7 +75,7 @@ package  fluidsolver.core.worker
 							doReturn = true;
 						}
 					}
-					if(doReturn)backToMain.send({returns:returnObj});
+					if(doReturn)_backToMain.send({returns:returnObj});
 				}
 			}catch (e:Error) {
 				log(String(e));
@@ -104,20 +108,16 @@ package  fluidsolver.core.worker
 			if(methName=="setupSolver"){
 				
 				ApplicationDomain.currentDomain.domainMemory.shareable = true;
-				worker.setSharedProperty("sharedBytes", ApplicationDomain.currentDomain.domainMemory);
+				_worker.setSharedProperty("sharedBytes", ApplicationDomain.currentDomain.domainMemory);
 				
-				worker.setSharedProperty("fluidImagePos", FluidSolverCrossbridge.getFluidImagePos());
-				worker.setSharedProperty("maxParticlesPos", FluidSolverCrossbridge.getMaxParticlesPos());
-				worker.setSharedProperty("particlesCountPos", FluidSolverCrossbridge.getParticlesCountPos());
-				worker.setSharedProperty("particlesDataPos", FluidSolverCrossbridge.getParticlesDataPos());
-				worker.setSharedProperty("particleImagePos", FluidSolverCrossbridge.getParticleImagePos());
-				worker.setSharedProperty("particleEmittersPos", FluidSolverCrossbridge.getParticleEmittersPos());
-				
-				worker.setSharedProperty("rOldPos", FluidSolverCrossbridge.getROldPos());
-				worker.setSharedProperty("gOldPos", FluidSolverCrossbridge.getGOldPos());
-				worker.setSharedProperty("bOldPos", FluidSolverCrossbridge.getBOldPos());
-				worker.setSharedProperty("uOldPos", FluidSolverCrossbridge.getUOldPos());
-				worker.setSharedProperty("vOldPos", FluidSolverCrossbridge.getVOldPos());
+				_worker.setSharedProperty("fluidImagePos", FluidSolverCrossbridge.getFluidImagePos());
+				_worker.setSharedProperty("maxParticlesPos", FluidSolverCrossbridge.getMaxParticlesPos());
+				_worker.setSharedProperty("particlesCountPos", FluidSolverCrossbridge.getParticlesCountPos());
+				_worker.setSharedProperty("particlesDataPos", FluidSolverCrossbridge.getParticlesDataPos());
+				_worker.setSharedProperty("particleEmittersPos", FluidSolverCrossbridge.getParticleEmittersPos());
+			
+				addEventListener(Event.ENTER_FRAME, onEnterFrame);
+				_lastTime = getTimer();
 			}
 			return ret;
 		}
