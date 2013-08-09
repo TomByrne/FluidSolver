@@ -58,6 +58,9 @@ double _colorDiffusion;
 int _doVorticityConfinement = 0;
 float _cullAlpha;
 
+float gravityX = 0.0;
+float gravityY = 0.0;
+
 int wrap_x = 0;
 int wrap_y = 0;
 
@@ -127,8 +130,8 @@ inline void addSourceUV()
 
 	for(up = u, vp = v, uop = uOld, vop = vOld; up < u+numCells;)
 	{
-		*(up++) += (_dt * (*(uop++)));
-		*(vp++) += (_dt * (*(vop++)));
+		*(up++) += (_dt * (*(uop++) + gravityX));
+		*(vp++) += (_dt * (*(vop++) + gravityY));
 	}
 }
 
@@ -299,6 +302,9 @@ void reset()
 	particles = (float*)calloc( _maxParticles*PARTICLE_MEM, sizeof(float) );
 	particles2 = (float*)calloc( _maxParticles*PARTICLE_MEM, sizeof(float) );
 
+	gravityX = 0.0;
+	gravityY = 0.0;
+
 
 	_particles = particles;
 	_particles2 = particles2;
@@ -307,6 +313,7 @@ void reset()
 
 	nextEmitterIndex = 0;
 	particleEmitterCount = 0;
+	printf("reset\n");
 
 	srand( (unsigned)time(NULL) );
 }
@@ -334,7 +341,7 @@ void drawFluidImage()
 	}
 }
 
-void drawParticleImage()
+void updateParticles()
 {
 	register float *pp;
 	register float *pp2;
@@ -998,7 +1005,7 @@ void updateSolver(double timeDelta)
 		++emitterIndex;
 	}
 	if(_drawFluid)drawFluidImage();
-	if(_doParticles)drawParticleImage();
+	if(_doParticles)updateParticles();
 }
 void clearParticles()
 {
@@ -1155,4 +1162,10 @@ void setFadeSpeed(double fadeSpeed)
 void setViscosity(double viscosity)
 {
 	_visc = viscosity;
+}
+
+void setGravity(float x, float y)
+{
+	gravityX = x / 1000;
+	gravityY = y / 1000;
 }

@@ -22,6 +22,7 @@ package fluidsolver.core
 		function setForce(tx:Number, ty:Number, dx:Number, dy:Number, returnHandler:Function = null):void;
 		function setColour(tx:Number, ty:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
 		function setForceAndColour(tx:Number, ty:Number, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
+		function setGravity(x:Number, y:Number, returnHandler:Function = null):void;
 		
 		
 		function get sharedBytes():ByteArray;

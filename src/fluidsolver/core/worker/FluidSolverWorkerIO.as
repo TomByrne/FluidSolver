@@ -28,7 +28,7 @@ package  fluidsolver.core.worker
 		private var _lastHandlerId:int = 0;
 		private var _returnHandlerLookup:Dictionary = new Dictionary();
 		
-		private var _pendingCalls:Object;
+		private var _pendingCalls:Array;
 		
 		public function FluidSolverWorkerIO() 
 		{
@@ -46,41 +46,51 @@ package  fluidsolver.core.worker
 			setFPS(30);
 		}
 		public function setFPS(value:int, returnHandler:Function=null):void {
-			appendCall("setFPS",[registerCall(returnHandler), value]);
+			appendCall("setFPS",[value],registerCall(returnHandler));
 		}
 		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int=5000, cullAlpha:Number=0, returnHandler:Function=null):void {
-			appendCall("setupSolver",[registerCall(returnHandler), gridWidth, gridHeight, screenW, screenH, drawFluid, isRGB, doParticles, maxParticles, cullAlpha]);
+			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid, isRGB, doParticles, maxParticles, cullAlpha],registerCall(returnHandler));
 		}
 		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
-			appendCall("addParticleEmitter",[registerCall(returnHandler), x, y, rate, xSpread, ySpread, alphVar, massVar, decay]);
+			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, alphVar, massVar, decay],registerCall(returnHandler));
 		}
 		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
-			appendCall("changeParticleEmitter",[registerCall(returnHandler), index, x, y, rate, xSpread, ySpread, alphVar, massVar, decay]);
+			appendCall("changeParticleEmitter",[index, x, y, rate, xSpread, ySpread, alphVar, massVar, decay],registerCall(returnHandler));
 		}
 		public function updateSolver(timeDelta:Number, returnHandler:Function=null):void {
-			appendCall("updateSolver",[registerCall(returnHandler), timeDelta]);
+			appendCall("updateSolver",[timeDelta],registerCall(returnHandler));
 		}
 		public function clearParticles(returnHandler:Function=null):void {
-			appendCall("clearParticles",[registerCall(returnHandler)]);
+			appendCall("clearParticles",[],registerCall(returnHandler));
 		}
 		public function setForce(tx:Number, ty:Number, dx:Number, dy:Number, returnHandler:Function=null):void {
-			appendCall("setForce",[registerCall(returnHandler), tx, ty, dx, dy]);
+			appendCall("setForce",[tx, ty, dx, dy],registerCall(returnHandler));
 		}
 		public function setColour(tx:Number, ty:Number, r:Number, g:Number, b:Number, returnHandler:Function=null):void{
-			appendCall("setColour",[registerCall(returnHandler), tx, ty, r, g, b]);
+			appendCall("setColour",[tx, ty, r, g, b],registerCall(returnHandler));
 		}
 		public function setForceAndColour(tx:Number, ty:Number, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function=null):void{
-			appendCall("setForceAndColour",[registerCall(returnHandler), tx, ty, dx, dy, r, g, b]);
+			appendCall("setForceAndColour",[tx, ty, dx, dy, r, g, b],registerCall(returnHandler));
+		}
+		public function setGravity(x:Number, y:Number, returnHandler:Function=null):void{
+			appendCall("setGravity",[x, y],registerCall(returnHandler));
 		}
 		
-		private function appendCall(methodName:String, args:Array):void {
+		private function appendCall(methodName:String, args:Array, returnId:int):void {
+			var callObj:Object = { meth:methodName, args:args, retId:returnId };
 			if (isInited && !collateCalls) {
-				var obj:Object = { };
-				obj[methodName] = args;
-				mainToBack.send({calls:obj});
+				mainToBack.send({calls:[callObj]});
 			}else {
-				if (!_pendingCalls)_pendingCalls = { };
-				_pendingCalls[methodName] = args;
+				if (!_pendingCalls)_pendingCalls = [];
+				_pendingCalls.push(callObj);
+				
+				/*if(!_pendingCalls[methodName]){
+					_pendingCalls[methodName] = args;
+				}else if (_pendingCalls[methodName][0] is Array) {
+					_pendingCalls[methodName].push(args);
+				}else{
+					_pendingCalls[methodName] = [_pendingCalls[methodName],args];
+				}*/
 			}
 		}
 		public function executeCalls():void {

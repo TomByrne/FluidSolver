@@ -48,6 +48,17 @@ package
 			
 			_fluidSolver.setFPS(60);
 			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, false, false, true, PARTICLES, 0,  onFluidSetup);
+			_fluidSolver.setGravity(0, -0.05);
+			
+			// set up the jet stream
+			/*const start:Number = 300;
+			const dist:Number = (RENDER_W - start) / 8;
+			const wobble:Number = 5;
+			for (var i:int = 0; i < 7; ++i){
+				var x:Number = (start+(dist * i)) / RENDER_W;
+				var y:Number = (RENDER_H / 2 + (i % 1?wobble: -wobble)) / RENDER_H;
+				_fluidSolver.changeParticleEmitter(i, x, y, 5, 30, 30, 0.3, 0.7, 1);
+			}*/
 		}
 		protected function onFluidSetup():void {
 			_fluidRenderer.solverInited(_fluidSolver);

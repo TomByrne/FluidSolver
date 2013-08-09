@@ -64,12 +64,10 @@ package  fluidsolver.core.worker
 					var didSetup:Boolean = false;
 					var returnObj:Object = { };
 					var doReturn:Boolean = false;
-					for (var i:String in calls) {
-						var args:Array = calls[i];
-						var id:int = args.shift();
-						var ret:* = doCall(i, args);
-						if (id != -1) {
-							returnObj[String(id)] = ret;
+					for each(var callObj:Object in calls) {
+						var ret:* = doCall(callObj.meth, callObj.args);
+						if (callObj.retId != -1) {
+							returnObj[String(callObj.retId)] = ret;
 							doReturn = true;
 						}
 					}

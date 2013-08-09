@@ -32,6 +32,7 @@ void clearParticles();
 void setForce(double tx, double ty, double dx, double dy);
 void setColour(double tx, double ty, float r, float g, float b);
 void setForceAndColour(double tx, double ty, double dx, double dy, float r, float g, float b);
+void setGravity(float x, float y);
 
 void setWrap(int wrapX, int wrapY);
 void setColorDiffusion(double colorDiffusion);

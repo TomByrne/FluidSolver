@@ -69,6 +69,10 @@ package fluidsolver.core
 			FluidSolverCrossbridge.setForceAndColour(tx, ty, dx, dy, r, g, b);
 			if(returnHandler!=null)returnHandler();
 		}
+		public function setGravity(x:Number, y:Number, returnHandler:Function = null):void {
+			FluidSolverCrossbridge.setGravity(x, y);
+			if(returnHandler!=null)returnHandler();
+		}
 		
 		private var _sharedBytes:ByteArray;
 		public function get sharedBytes():ByteArray {

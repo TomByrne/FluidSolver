@@ -26,7 +26,7 @@ package fluidsolver.away3d
 		private var _animationSets:Vector.<FluidAnimationSet>;
 		private var _meshes:Vector.<Mesh>;
 		
-		public function AgalParticleRenderer(totalParticles:int, materialCreator:Function, centerX:Number=0, centerY:Number=0)
+		public function AgalParticleRenderer(totalParticles:int, materialCreator:Function, centerX:Number=0, centerY:Number=0, particleW:Number=32, particleH:Number=32)
 		{
 			_container = new ObjectContainer3D();
 			
@@ -35,7 +35,7 @@ package fluidsolver.away3d
 			var totalGroups:int = Math.ceil(totalParticles / TOTAL_PARTICLES_PER_GROUP);
 			for (var i:int = 0; i < totalGroups; i++){
 				var meshes:Vector.<Mesh> = new Vector.<Mesh>();
-				var geo:PlaneGeometry = new PlaneGeometry(32, 32, 1, 1, false);
+				var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false);
 				
 				var count:int = Math.min(TOTAL_PARTICLES_PER_GROUP, totalParticles - (i * TOTAL_PARTICLES_PER_GROUP));
 				for (var k:int = 0; k < count; ++k) {
@@ -58,6 +58,14 @@ package fluidsolver.away3d
 				receiver.animator = trailAnimator;
 			
 				_animationSets.push(trailAnimationSet);
+			}
+		}
+		
+		public function setScale(minScale:Number, maxScale:Number):void {
+			for (var i:int = 0; i < _animationSets.length; ++i ) {
+				var animSet:FluidAnimationSet = _animationSets[i];
+				animSet.minScale = minScale;
+				animSet.maxScale = maxScale;
 			}
 		}
 		
