@@ -53,7 +53,7 @@ package  fluidsolver.core.worker
 		}
 		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int = 5000, cullAlpha:Number = 0, returnHandler:Function = null, updateHandler:Function = null):void {
 			_updateHandler = updateHandler;
-			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid, isRGB, doParticles, maxParticles, cullAlpha],registerCall(returnHandler));
+			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, maxParticles, cullAlpha],registerCall(returnHandler));
 		}
 		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
 			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, alphVar, massVar, decay],registerCall(returnHandler));
@@ -78,6 +78,9 @@ package  fluidsolver.core.worker
 		}
 		public function setGravity(x:Number, y:Number, returnHandler:Function=null):void{
 			appendCall("setGravity",[x, y],registerCall(returnHandler));
+		}
+		public function setWrapping(x:Boolean, y:Boolean, returnHandler:Function=null):void{
+			appendCall("setWrapping",[x?1:0, y?1:0],registerCall(returnHandler));
 		}
 		
 		private function appendCall(methodName:String, args:Array, returnId:int):void {

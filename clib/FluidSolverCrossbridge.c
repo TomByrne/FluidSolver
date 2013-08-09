@@ -1103,7 +1103,7 @@ int* getFluidImagePos()
 {
 	return fluidsImage;
 }
-void setWrap(int wrapX, int wrapY)
+void setWrapping(int wrapX, int wrapY)
 {
 	wrap_x = wrapX;
 	wrap_y = wrapY;

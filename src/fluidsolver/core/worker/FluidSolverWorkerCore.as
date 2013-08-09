@@ -87,19 +87,7 @@ package  fluidsolver.core.worker
 			if (methName == "setFPS") {
 				target = this; // this is a temporary solution till we find a way around some weird bytearray index issue
 			}else {
-				if (methName == "setupSolver") {
-					if (!args[4]) {
-						// if not drawing fluid, set isRGB to -1
-						args[5] = -1;
-					}
-				}
 				target = FluidSolverCrossbridge;
-			}
-			for (var j:int = 0; j < args.length; ++j) {
-				var val:* = args[j];
-				if (typeof(val)=="boolean") {
-					args[j] = (val?1:0);
-				}
 			}
 			//log("call: " + methName + " " + args);
 			

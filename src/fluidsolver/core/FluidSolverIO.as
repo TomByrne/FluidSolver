@@ -87,6 +87,10 @@ package fluidsolver.core
 			FluidSolverCrossbridge.setGravity(x, y);
 			if(returnHandler!=null)returnHandler();
 		}
+		public function setWrapping(x:Boolean, y:Boolean, returnHandler:Function = null):void {
+			FluidSolverCrossbridge.setWrapping(x?1:0, y?1:0);
+			if(returnHandler!=null)returnHandler();
+		}
 		
 		private var _sharedBytes:ByteArray;
 		public function get sharedBytes():ByteArray {

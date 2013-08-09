@@ -34,7 +34,7 @@ void setColour(double tx, double ty, float r, float g, float b);
 void setForceAndColour(double tx, double ty, double dx, double dy, float r, float g, float b);
 void setGravity(float x, float y);
 
-void setWrap(int wrapX, int wrapY);
+void setWrapping(int wrapX, int wrapY);
 void setColorDiffusion(double colorDiffusion);
 void setSolverIterations(int solverIterations);
 void setVorticityConfinement(int doVorticityConfinement);

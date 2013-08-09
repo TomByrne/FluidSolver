@@ -57,6 +57,7 @@ package
 			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES, 0,  onFluidSetup, fluidUpdate);
 			_fluidSolver.setFPS(30);
 			_fluidSolver.setGravity(0, -0.05);
+			//_fluidSolver.setWrapping(true, true);
 			
 			// set up the jet stream
 			/*const start:Number = 300;

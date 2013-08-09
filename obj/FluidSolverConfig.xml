@@ -42,7 +42,7 @@
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>C:\TomRoot\Projects\FluidSolver\testSrc\Worker_Bitmap_FluidImage.as</path-element>
+    <path-element>C:\TomRoot\Projects\FluidSolver\testSrc\Worker_Bitmap_Blit.as</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>60</default-frame-rate>
