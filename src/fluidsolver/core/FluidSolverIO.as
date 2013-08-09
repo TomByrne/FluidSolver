@@ -18,6 +18,7 @@ package fluidsolver.core
 		private var _isSetup:Boolean;
 		private var _lastTime:int;
 		private var _updateHandler:Function;
+		private var _speed:Number = 1;
 		
 		public function FluidSolverIO() 
 		{
@@ -42,7 +43,7 @@ package fluidsolver.core
 		
 		private function onUpdateTimer(e:TimerEvent):void {
 			var time:int = getTimer();
-			FluidSolverCrossbridge.updateSolver((time-_lastTime)/100);
+			FluidSolverCrossbridge.updateSolver((time-_lastTime) / 100 * _speed);
 			_lastTime = time;
 			if (_updateHandler != null)_updateHandler();
 		}
@@ -114,14 +115,48 @@ package fluidsolver.core
 		public function get fluidImagePos():int {
 			return FluidSolverCrossbridge.getFluidImagePos();
 		}
-		/*
-
-		void setWrap(int wrapX, int wrapY);
-		void setColorDiffusion(double colorDiffusion);
-		void setSolverIterations(int solverIterations);
-		void setVorticityConfinement(int doVorticityConfinement);
-		void setFadeSpeed(double fadeSpeed);
-		void setViscosity(double viscosity);*/
+		
+		public function get speed():Number {
+			return _speed;
+		}
+		public function set speed(value:Number):void {
+			_speed = value;
+		}
+		
+		public function get viscosity():Number {
+			return FluidSolverCrossbridge.getViscosity();
+		}
+		public function set viscosity(value:Number):void {
+			FluidSolverCrossbridge.setViscosity(value);
+		}
+		
+		public function get fadeSpeed():Number {
+			return FluidSolverCrossbridge.getFadeSpeed();
+		}
+		public function set fadeSpeed(value:Number):void {
+			FluidSolverCrossbridge.setFadeSpeed(value);
+		}
+		
+		public function get vorticityConfinement():Boolean {
+			return FluidSolverCrossbridge.getVorticityConfinement()==1?true:false;
+		}
+		public function set vorticityConfinement(value:Boolean):void {
+			FluidSolverCrossbridge.setVorticityConfinement(value?1:0);
+		}
+		
+		public function get solverIterations():int {
+			return FluidSolverCrossbridge.getSolverIterations();
+		}
+		public function set solverIterations(value:int):void {
+			FluidSolverCrossbridge.setSolverIterations(value);
+		}
+		
+		public function get colorDiffusion():Number {
+			return FluidSolverCrossbridge.getColorDiffusion();
+		}
+		public function set colorDiffusion(value:Number):void {
+			FluidSolverCrossbridge.setColorDiffusion(value);
+		}
 	}
 
 }

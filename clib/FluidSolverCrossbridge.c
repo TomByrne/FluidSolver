@@ -1113,25 +1113,42 @@ void setColorDiffusion(double colorDiffusion)
 {
 	_colorDiffusion = colorDiffusion;
 }
-
 void setSolverIterations(int solverIterations)
 {
 	_solverIterations = solverIterations;
 }
-
 void setVorticityConfinement(int doVorticityConfinement)
 {
 	_doVorticityConfinement = doVorticityConfinement;
 }
-
 void setFadeSpeed(double fadeSpeed)
 {
 	_fadeSpeed = fadeSpeed;
 }
-
 void setViscosity(double viscosity)
 {
 	_visc = viscosity;
+}
+
+double getColorDiffusion()
+{
+	return _colorDiffusion;
+}
+int getSolverIterations()
+{
+	return _solverIterations;
+}
+int getVorticityConfinement()
+{
+	return _doVorticityConfinement;
+}
+double getFadeSpeed()
+{
+	return _fadeSpeed;
+}
+double getViscosity()
+{
+	return _visc;
 }
 
 void setGravity(float x, float y)

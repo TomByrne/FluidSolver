@@ -24,14 +24,24 @@ package fluidsolver.core
 		function setForceAndColour(tx:Number, ty:Number, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
 		function setGravity(x:Number, y:Number, returnHandler:Function = null):void;
 		function setWrapping(x:Boolean, y:Boolean, returnHandler:Function = null):void;
-		/*
-
-		void setColorDiffusion(double colorDiffusion);
-		void setSolverIterations(int solverIterations);
-		void setVorticityConfinement(int doVorticityConfinement);
-		void setFadeSpeed(double fadeSpeed);
-		void setViscosity(double viscosity);*/
 		
+		function get speed():Number;
+		function set speed(value:Number):void;
+		
+		function get viscosity():Number;
+		function set viscosity(value:Number):void;
+		
+		function get fadeSpeed():Number;
+		function set fadeSpeed(value:Number):void;
+		
+		function get vorticityConfinement():Boolean;
+		function set vorticityConfinement(value:Boolean):void;
+		
+		function get solverIterations():int;
+		function set solverIterations(value:int):void;
+		
+		function get colorDiffusion():Number;
+		function set colorDiffusion(value:Number):void;
 		
 		function get sharedBytes():ByteArray;
 		function get particlesCountPos():int;

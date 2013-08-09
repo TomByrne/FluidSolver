@@ -23,6 +23,7 @@ package  fluidsolver.core.worker
 		private var _mainToBack:MessageChannel;
 		private var _backToMain:MessageChannel;
 		private var _lastTime:int;
+		private var _speed:Number = 1;
 		
 		public function FluidSolverWorkerCore():void 
 		{
@@ -33,7 +34,7 @@ package  fluidsolver.core.worker
 			
 			_mainToBack = _worker.getSharedProperty("mainToBack");
 			if (_mainToBack) {
-				_mainToBack.addEventListener(Event.CHANNEL_MESSAGE, on_mainToBack);
+				_mainToBack.addEventListener(Event.CHANNEL_MESSAGE, onMainToBack);
 			}
 			
 			_backToMain = _worker.getSharedProperty("backToMain");
@@ -44,7 +45,7 @@ package  fluidsolver.core.worker
 		}
 		protected function onEnterFrame(event:Event):void {
 			var time:int = getTimer();
-			FluidSolverCrossbridge.updateSolver((time-_lastTime)/100);
+			FluidSolverCrossbridge.updateSolver((time-_lastTime)/100 * _speed);
 			_lastTime = time;
 			
 			var returnObject:Object = new Object();
@@ -58,7 +59,7 @@ package  fluidsolver.core.worker
 			_backToMain.send({calls: {"trace":params}});
 		}
 		
-		protected function on_mainToBack(event:Event):void {
+		protected function onMainToBack(event:Event):void {
 			try{
 				if (!_mainToBack.messageAvailable) return;
 				var sentObject:Object = _mainToBack.receive();
@@ -84,7 +85,7 @@ package  fluidsolver.core.worker
 		
 		public function doCall(methName:String, args:Array):* {
 			var target:Object;
-			if (methName == "setFPS") {
+			if (methName == "setFPS" || methName == "setSpeed") {
 				target = this; // this is a temporary solution till we find a way around some weird bytearray index issue
 			}else {
 				target = FluidSolverCrossbridge;
@@ -112,6 +113,9 @@ package  fluidsolver.core.worker
 		
 		private function setFPS(value:int):void {
 			stage.frameRate = value;
+		}
+		private function setSpeed(value:Number):void {
+			_speed = value;
 		}
 	}
 }

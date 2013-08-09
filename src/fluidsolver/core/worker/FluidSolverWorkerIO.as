@@ -54,6 +54,11 @@ package  fluidsolver.core.worker
 		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int = 5000, cullAlpha:Number = 0, returnHandler:Function = null, updateHandler:Function = null):void {
 			_updateHandler = updateHandler;
 			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, maxParticles, cullAlpha],registerCall(returnHandler));
+			appendCall("getViscosity",[],registerCall(_gotViscosity));
+			appendCall("getFadeSpeed",[],registerCall(_gotFadeSpeed));
+			appendCall("getVorticityConfinement",[],registerCall(_gotVorticityConfinement));
+			appendCall("getSolverIterations",[],registerCall(_gotSolverIterations));
+			appendCall("getColorDiffusion",[],registerCall(_gotColorDiffusion));
 		}
 		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
 			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, alphVar, massVar, decay],registerCall(returnHandler));
@@ -128,19 +133,16 @@ package  fluidsolver.core.worker
 			for (var i:String in returns) {
 				var id:int = parseInt(i);
 				var handler:Function = _returnHandlerLookup[id];
-				handler.apply(null, returns[i]);
+				var returned:* = returns[i]
+				handler.apply(null, returned!=null?[returned]:null);
 				delete _returnHandlerLookup[id];
 			}
 		 
 			var calls:Object = returnObject.calls;
 			if (calls) {
-				var didSetup:Boolean = false;
 				var returnObj:Object = { };
 				var doReturn:Boolean = false;
 				for (i in calls) {
-					if (i == "setupSolver") {
-						didSetup = true;
-					}
 					var args:Array = calls[i];
 					var target:Object = this;
 					if (i == "trace") {
@@ -155,7 +157,7 @@ package  fluidsolver.core.worker
 						doReturn = true;
 					}
 				}
-				if(doReturn)backToMain.send(returnObj);
+				if(doReturn)mainToBack.send(returnObj);
 			}
 			
 		}
@@ -183,14 +185,77 @@ package  fluidsolver.core.worker
 		public function get fluidImagePos():int {
 			return worker.getSharedProperty("fluidImagePos");
 		}
-		/*
-
-		void setWrap(int wrapX, int wrapY);
-		void setColorDiffusion(double colorDiffusion);
-		void setSolverIterations(int solverIterations);
-		void setVorticityConfinement(int doVorticityConfinement);
-		void setFadeSpeed(double fadeSpeed);
-		void setViscosity(double viscosity);*/
+		
+		
+		private function _gotViscosity(value:Number):void {
+			_viscosity = value;
+		}
+		private function _gotFadeSpeed(value:Number):void {
+			_fadeSpeed = value;
+		}
+		private function _gotVorticityConfinement(value:int):void {
+			_vorticityConfinement = value==1;
+		}
+		private function _gotSolverIterations(value:int):void {
+			_solverIterations = value;
+		}
+		private function _gotColorDiffusion(value:Number):void {
+			_colorDiffusion = value;
+		}
+		
+		private var _speed:Number = 1;
+		public function get speed():Number {
+			return _speed;
+		}
+		public function set speed(value:Number):void {
+			_speed = value;
+			appendCall("setSpeed",[value],-1);
+		}
+		
+		private var _viscosity:Number;
+		public function get viscosity():Number {
+			return _viscosity;
+		}
+		public function set viscosity(value:Number):void {
+			_viscosity = value;
+			appendCall("setViscosity",[value],-1);
+		}
+		
+		private var _fadeSpeed:Number;
+		public function get fadeSpeed():Number {
+			return _fadeSpeed;
+		}
+		public function set fadeSpeed(value:Number):void {
+			_fadeSpeed = value;
+			appendCall("setFadeSpeed",[value],-1);
+		}
+		
+		private var _vorticityConfinement:Boolean;
+		public function get vorticityConfinement():Boolean {
+			return _vorticityConfinement;
+		}
+		public function set vorticityConfinement(value:Boolean):void {
+			_vorticityConfinement = value;
+			appendCall("setVorticityConfinement",[value?1:0],-1);
+		}
+		
+		private var _solverIterations:int;
+		public function get solverIterations():int {
+			return _solverIterations;
+		}
+		public function set solverIterations(value:int):void {
+			_solverIterations = value;
+			appendCall("setSolverIterations",[value],-1);
+		}
+		
+		private var _colorDiffusion:Number;
+		public function get colorDiffusion():Number {
+			return _colorDiffusion;
+		}
+		public function set colorDiffusion(value:Number):void {
+			_colorDiffusion = value;
+			appendCall("setColorDiffusion",[value],-1);
+		}
 	}
 
 }

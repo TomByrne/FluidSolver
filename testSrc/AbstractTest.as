@@ -29,7 +29,7 @@ package
 		public static const GRID_W:uint = 150;
 		public static const PARTICLES:uint = 2000;
 		
-		public static const VELOCITY_MULTIPLIER:Number = 60;
+		public static const VELOCITY_MULTIPLIER:Number = 100;
 		
 		private var _fluidSolver:IFluidSolver;
 		private var _fluidRenderer:IFluidRenderer;

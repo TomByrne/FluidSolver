@@ -35,11 +35,18 @@ void setForceAndColour(double tx, double ty, double dx, double dy, float r, floa
 void setGravity(float x, float y);
 
 void setWrapping(int wrapX, int wrapY);
+
 void setColorDiffusion(double colorDiffusion);
 void setSolverIterations(int solverIterations);
 void setVorticityConfinement(int doVorticityConfinement);
 void setFadeSpeed(double fadeSpeed);
 void setViscosity(double viscosity);
+
+double getColorDiffusion();
+int getSolverIterations();
+int getVorticityConfinement();
+double getFadeSpeed();
+double getViscosity();
 
 int* getParticlesCountPos();
 int* getMaxParticlesPos();
