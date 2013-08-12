@@ -14,7 +14,6 @@ package fluidsolver.away3d
 	 */
 	public class AgalParticleRenderer implements IFluidRenderer
 	{
-		private const TOTAL_PARTICLES_PER_GROUP:Number = 50;
 		
 		public function get display():ObjectContainer3D {
 			return _container;
@@ -32,12 +31,12 @@ package fluidsolver.away3d
 			
 			_animationSets = new Vector.<FluidAnimationSet>();
 			_meshes = new Vector.<Mesh>();
-			var totalGroups:int = Math.ceil(totalParticles / TOTAL_PARTICLES_PER_GROUP);
+			var totalGroups:int = Math.ceil(totalParticles / FluidAnimationSet.MAX_PARTICLES);
 			for (var i:int = 0; i < totalGroups; i++){
 				var meshes:Vector.<Mesh> = new Vector.<Mesh>();
 				var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false);
 				
-				var count:int = Math.min(TOTAL_PARTICLES_PER_GROUP, totalParticles - (i * TOTAL_PARTICLES_PER_GROUP));
+				var count:int = Math.min(FluidAnimationSet.MAX_PARTICLES, totalParticles - (i * FluidAnimationSet.MAX_PARTICLES));
 				for (var k:int = 0; k < count; ++k) {
 					var mesh:Mesh = new Mesh(geo.clone(), null);
 					mesh.z = k;
@@ -45,14 +44,14 @@ package fluidsolver.away3d
 				}
 				
 				var receiver:Mesh = new Mesh(geo, materialCreator());
-				receiver.x = centerX;
-				receiver.y = centerY;
 				_container.addChild(receiver);
 				
 				var merge:Merge = new Merge(false, true);
 				merge.applyToMeshes(receiver, meshes);
 				
 				var trailAnimationSet:FluidAnimationSet = new FluidAnimationSet();
+				trailAnimationSet.offsetX = centerX;
+				trailAnimationSet.offsetY = centerY;
 				trailAnimationSet.setMaxParticles(count);
 				var trailAnimator:FluidAnimator = new FluidAnimator(trailAnimationSet);
 				receiver.animator = trailAnimator;

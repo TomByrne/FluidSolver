@@ -24,9 +24,13 @@ package fluidsolver.away3d
 	 */
 	public class FluidAnimationSet extends AnimationSetBase implements IAnimationSet
 	{
+		public static const MAX_PARTICLES:int = 61; // maximum amount of particles we can squeeze into constant space
+		
 		public var minScale:Number = 1;
 		public var maxScale:Number = 5;
 		
+		public var offsetX:Number = 0;
+		public var offsetY:Number = 0;
 		
 		public function FluidAnimationSet()
 		{
@@ -42,21 +46,20 @@ package fluidsolver.away3d
 			var temp:String = "vt4";
 			var data1:String = "vt5";
 			var data2:String = "vt6";
-			var minScale:String = "vc10.x";
-			var maxScale:String = "vc10.y";
-			var scaleRange:String = "vc10.z";
-			var const0:String = "vc11.x";
-			var const1:String = "vc11.y";
-			var const2:String = "vc11.z";
-			var byteIndex:String = "vc11.w";
+			var minScale:String = "vc5.x";
+			var scaleRange:String = "vc5.y";
+			var offsets:String = "vc5.zw";
+			var const0:String = "vc4.x";
+			var const1:String = "vc4.y";
+			var const2:String = "vc4.z";
+			var byteIndex:String = "vc4.w";
 			
 			var endPos:String = "vt0";
 			
 			return  "mov " + endPos + ", va0 \n" + 
-					"mov "+temp+".x, "+endPos+".z \n" + 
-					"mul "+temp+".x, "+temp+".x, "+const2+" \n" + 
-					"add "+temp+".x, "+temp+".x, "+byteIndex+" \n" + 
-					"add " + temp + ".y, " + temp + ".x, " + const1 + " \n" + 
+					"mov "+temp+".x, "+endPos+".z \n" + 								// take particle index from object.z
+					"mul "+temp+".x, "+temp+".x, "+const2+" \n" + 						// add 2 to particle index
+					"add "+temp+".x, "+temp+".x, "+byteIndex+" \n" + 					// add constant start offset
 					
 					"mov " + data1 + ", vc[" + temp + ".x] \n" + 						// get particle data 1
 					"mov " + data2 + ", vc[" + temp + ".x] \n" +  						// get particle data 2
@@ -66,8 +69,11 @@ package fluidsolver.away3d
 					"add "+temp+".z, "+temp+".z, "+minScale+" \n" +     				// add min scale
 					"mul " + endPos + ".xy, " + endPos + ".xy, " + temp + ".z \n" +     // scale
 					
-					"add " + endPos + ".x, " + endPos + ".x,"+data1+".y \n" +
-					"sub " + endPos + ".y, " + endPos + ".y,"+data1+".z \n" +
+					"add " + endPos + ".x, " + endPos + ".x,"+data1+".y \n" +			// set x pos
+					"sub " + endPos + ".y, " + endPos + ".y,"+data1+".z \n" +			// set y pos
+					"add " + endPos + ".xy, " + endPos + ".xy,"+offsets+" \n" +			// add offsets
+					"mov " + endPos + ".z, " + const0 + " \n" +							// set z to 0
+					
 					"mov v1, " + data1+" \n" +
 					"mov v2, " + data2+" \n";
 		}
@@ -79,14 +85,14 @@ package fluidsolver.away3d
 		{
 			var context : Context3D = stage3DProxy._context3D;
 			if (_particleData) {
-				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 10, Vector.<Number>([minScale, maxScale, maxScale-minScale, 0]), 1);
-				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 11, Vector.<Number>([0, 1, 2, 12]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 5, Vector.<Number>([minScale, maxScale-minScale, offsetX, offsetY]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, Vector.<Number>([0, 1, 2, 6]), 1);
 				
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 4, Vector.<Number>([0, 1, 2, 0xff]), 1);
 				
 				var regCount:int = Math.ceil(_maxParticles * 2);
 				_particleData.position = 0;
-				context.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, 12, regCount, _particleData, _dataOffset);
+				context.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, 6, regCount, _particleData, _dataOffset);
 			}
 		}
 		

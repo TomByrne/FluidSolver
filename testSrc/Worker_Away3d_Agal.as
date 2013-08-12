@@ -2,6 +2,7 @@ package
 {
 	import away3d.containers.View3D;
 	import away3d.debug.AwayStats;
+	import away3d.debug.Debug;
 	import away3d.materials.MaterialBase;
 	import away3d.materials.TextureMaterial;
 	import away3d.textures.BitmapTexture;
@@ -27,6 +28,8 @@ package
 			addChild(view);
 			
 			texture = new BitmapTexture(new BLACK_STAMP().bitmapData);
+			
+			//Debug.active = true;
 			
 			var renderer:AgalParticleRenderer = new AgalParticleRenderer(PARTICLES, makeMaterial, -RENDER_W/2, RENDER_H/2);
 			

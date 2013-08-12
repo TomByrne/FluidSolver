@@ -16,7 +16,7 @@
     </define>
     <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'10/08/2013'</value>
+      <value>'12/08/2013'</value>
     </define>
     <define append="true">
       <name>CONFIG::air</name>
@@ -32,17 +32,17 @@
     </define>
     <verbose-stacktraces>true</verbose-stacktraces>
     <source-path append="true">
-      <path-element>C:\TomRoot\Projects\FluidSolver\src</path-element>
-      <path-element>C:\TomRoot\Projects\FluidSolver\testSrc</path-element>
+      <path-element>C:\Projects\GE\FluidSolver\src</path-element>
+      <path-element>C:\Projects\GE\FluidSolver\testSrc</path-element>
       <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
     <library-path append="true">
-      <path-element>C:\TomRoot\Projects\FluidSolver\lib</path-element>
-      <path-element>C:\TomRoot\Projects\FluidSolver\clib\FluidSolverCrossbridge.swc</path-element>
+      <path-element>C:\Projects\GE\FluidSolver\lib</path-element>
+      <path-element>C:\Projects\GE\FluidSolver\clib\FluidSolverCrossbridge.swc</path-element>
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>C:\TomRoot\Projects\FluidSolver\testSrc\Worker_Away3d_Agal.as</path-element>
+    <path-element>C:\Projects\GE\FluidSolver\testSrc\Worker_Away3d_Agal.as</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>60</default-frame-rate>
