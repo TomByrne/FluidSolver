@@ -48,8 +48,8 @@ package fluidsolver.core
 			if (_updateHandler != null)_updateHandler();
 		}
 		
-		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int=5000, cullAlpha:Number=0, returnHandler:Function=null, updateHandler:Function=null):void {
-			FluidSolverCrossbridge.setupSolver(gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, maxParticles, cullAlpha);
+		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, emitterCounts:Vector.<int>=null, returnHandler:Function=null, updateHandler:Function=null):void {
+			FluidSolverCrossbridge.setupSolver(gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, emitterCounts?emitterCounts.join(","):"");
 			_isSetup = true;
 			if (returnHandler != null) returnHandler();
 			_lastTime = getTimer();
@@ -100,14 +100,20 @@ package fluidsolver.core
 			}
 			return _sharedBytes;
 		}
+		public function get emittersSetPos():int {
+			return FluidSolverCrossbridge.getEmittersSetPos();
+		}
 		public function get particlesCountPos():int {
 			return FluidSolverCrossbridge.getParticlesCountPos();
+		}
+		public function get particlesMaxPos():int {
+			return FluidSolverCrossbridge.getParticlesMaxPos();
 		}
 		public function get particlesDataPos():int {
 			return FluidSolverCrossbridge.getParticlesDataPos();
 		}
 		public function get maxParticlesPos():int {
-			return FluidSolverCrossbridge.getMaxParticlesPos();
+			return FluidSolverCrossbridge.getParticlesMaxPos();
 		}
 		public function get particleEmittersPos():int {
 			return FluidSolverCrossbridge.getParticleEmittersPos();

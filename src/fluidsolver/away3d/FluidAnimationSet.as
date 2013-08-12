@@ -58,7 +58,7 @@ package fluidsolver.away3d
 			
 			return  "mov " + endPos + ", va0 \n" + 
 					"mov "+temp+".x, "+endPos+".z \n" + 								// take particle index from object.z
-					"mul "+temp+".x, "+temp+".x, "+const2+" \n" + 						// add 2 to particle index
+					"mul "+temp+".x, "+temp+".x, "+const2+" \n" + 						// multiply 2 to particle index (2 vectors per particle)
 					"add "+temp+".x, "+temp+".x, "+byteIndex+" \n" + 					// add constant start offset
 					
 					"mov " + data1 + ", vc[" + temp + ".x] \n" + 						// get particle data 1

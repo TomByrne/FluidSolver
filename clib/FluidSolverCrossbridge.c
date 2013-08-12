@@ -28,8 +28,6 @@ static const double FLUID_DEFAULT_FADESPEED				= 0.003;
 static const int FLUID_DEFAULT_SOLVER_ITERATIONS		= 10;
 static const int FLUID_DEFAULT_VORTICITY_CONFINEMENT 	= 0;
 
-static const int PARTICLES_MAX							= 25000;
-static const int PARTICLES_MAX_EMITTERS					= 16;
 static const double MOMENTUM 							= 0.5;
 static const double FLUID_FORCE 						= 0.6;
 
@@ -52,11 +50,9 @@ double _dt = 0.5;
 int _isRGB = 0;
 int _drawFluid = 1;
 int _doParticles = 1;
-int _maxParticles = PARTICLES_MAX;
 int _solverIterations;
 double _colorDiffusion;
 int _doVorticityConfinement = 0;
-float _cullAlpha;
 
 float gravityX = 0.0;
 float gravityY = 0.0;
@@ -86,7 +82,10 @@ double *curl_orig;
 
 int *fluidsImage;
 
-int particleEmitterCount;
+int totalParticles;
+int particleEmitterMax;
+int particleEmittersSet;
+int *particleEmitterCounts;
 double nextEmitterIndex;
 double *particleEmitters;
 
@@ -94,8 +93,8 @@ float *particles;
 float *particles2;
 float *_particles;
 float *_particles2;
-int particlesNum = 0;
-int particlesNextIndex = 0;
+int *particlesNum;
+int *particlesNextIndex;
 
 inline double FMIN(register double a, register double b)
 {
@@ -249,10 +248,6 @@ inline void drawLine(int *layer, int x0, int y0, int x1, int y1, const int c)
 void destroy()
 {
 	if(fluidsImage)	free(fluidsImage);
-	if(particles)	free(particles);
-	if(particleEmitters)	free(particleEmitters);
-
-	if(particles2)	free(particles2);
 
     if(r)		free(r);
     if(rOld)	free(rOld);
@@ -269,6 +264,10 @@ void destroy()
     if(vOld)	free(vOld);
     if(curl_abs)	free(curl_abs);
     if(curl_orig)	free(curl_orig);
+
+	free(particleEmitters);
+	free(particles);
+	free(particles2);
 }
 
 
@@ -295,21 +294,20 @@ void reset()
 
 	fluidsImage = (int*)calloc( gridW*gridH, sizeof(int) );
 
-	particleEmitters = (double*)calloc( PARTICLES_MAX_EMITTERS*8, sizeof(double) );
-	particles = (float*)calloc( _maxParticles*PARTICLE_MEM, sizeof(float) );
-	particles2 = (float*)calloc( _maxParticles*PARTICLE_MEM, sizeof(float) );
+	particleEmitters = (double*)calloc( particleEmitterMax*8, sizeof(double) );
+
+    for(int i=0; i<particleEmitterMax; i++){
+		particlesNum[i] = 0;
+		particlesNextIndex[i] = 0;
+	}
+	particles = (float*)calloc( totalParticles*PARTICLE_MEM, sizeof(float) );
+	particles2 = (float*)calloc( totalParticles*PARTICLE_MEM, sizeof(float) );
 
 	gravityX = 0.0;
 	gravityY = 0.0;
 
-
-	_particles = particles;
-	_particles2 = particles2;
-	particlesNum = 0;
-	particlesNextIndex = 0;
-
 	nextEmitterIndex = 0;
-	particleEmitterCount = 0;
+	particleEmittersSet = 0;
 
 	srand( (unsigned)time(NULL) );
 }
@@ -346,7 +344,7 @@ void updateParticles()
 
 	int cnt = 0;
 
-	for( pp = _particles, pp2 = _particles2; pp < _particles+particlesNum*PARTICLE_MEM; )
+	for( pp = _particles, pp2 = _particles2; pp < _particles+totalParticles*PARTICLE_MEM; )
 	{
 		alpha = *(pp++);
 		x = *(pp++);
@@ -400,19 +398,15 @@ void updateParticles()
 
 		alpha = alpha * 0.996;
 
-		if(alpha >= _cullAlpha){
-			*(pp2++) = alpha;
-			*(pp2++) = x;
-			*(pp2++) = y;
-			*(pp2++) = vx;
-			*(pp2++) = vy;
-			*(pp2++) = mass;
-			*(pp2++) = emitter;
-			pp2++;
-			cnt++;
-		}
+		*(pp2++) = alpha;
+		*(pp2++) = x;
+		*(pp2++) = y;
+		*(pp2++) = vx;
+		*(pp2++) = vy;
+		*(pp2++) = mass;
+		*(pp2++) = emitter;
+		pp2++;
 	}
-	particlesNum = cnt;
 	register float *tmp = _particles;
 	_particles = _particles2;
 	_particles2 = tmp;
@@ -856,7 +850,7 @@ void setBoundaryRGB()
 	}
 }
 
-void setupSolver(int gridWidth, int gridHeight, int screenWidth, int screenHeight, int drawFluid, int isRGB, int doParticles, int maxParticles, float cullAlpha)
+void setupSolver(int gridWidth, int gridHeight, int screenWidth, int screenHeight, int drawFluid, int isRGB, int doParticles, char* emitterParticles)
 {
 	gridW = gridWidth;
 	gridH = gridHeight;
@@ -877,8 +871,6 @@ void setupSolver(int gridWidth, int gridHeight, int screenWidth, int screenHeigh
 	_isRGB = isRGB;
 	_drawFluid = drawFluid;
 	_doParticles = doParticles;
-	_maxParticles = maxParticles;
-	_cullAlpha = cullAlpha;
 
 	_dt = FLUID_DEFAULT_DT;
 	_fadeSpeed = FLUID_DEFAULT_FADESPEED;
@@ -886,6 +878,33 @@ void setupSolver(int gridWidth, int gridHeight, int screenWidth, int screenHeigh
 	_solverIterations = FLUID_DEFAULT_SOLVER_ITERATIONS;
 	_colorDiffusion = FLUID_DEFAULT_COLOR_DIFFUSION;
 	_doVorticityConfinement = FLUID_DEFAULT_VORTICITY_CONFINEMENT;
+
+	// strtok can modify string so make a copy
+	char *emitterParticles2 = (char*)calloc(1, sizeof(emitterParticles));
+	strcpy (emitterParticles2, emitterParticles);
+
+	char* count = strtok (emitterParticles," ,.-");
+	int i = 0;
+	while (count != NULL){
+		++i;
+		count = strtok (NULL, " ,.-");
+	}
+	particleEmitterCounts = (int*)calloc( i, sizeof(int) );
+	count = strtok (emitterParticles2," ,.-");
+	i = 0;
+	totalParticles = 0;
+	while (count != NULL){
+		int emCount = atoi(count);
+		totalParticles += emCount;
+		*(particleEmitterCounts + i) = emCount;
+		++i;
+		count = strtok (NULL, " ,.-");
+	}
+
+	particleEmitterMax = i;
+	particlesNum = new int[particleEmitterMax];
+	particlesNextIndex = new int[particleEmitterMax];
+
 
 	reset();
 }
@@ -944,8 +963,11 @@ void updateSolver(double timeDelta)
 
 	register double *pep;
 	int emitterIndex = 0;
-	for(pep = particleEmitters; pep < particleEmitters+particleEmitterCount*8;)
+	int particleOffset = 0;
+	for(pep = particleEmitters; pep < particleEmitters+particleEmittersSet*sizeof(double);)
 	{
+		int maxPart = particleEmitterCounts[emitterIndex];
+
 		double x = *(pep++);
 		double y = *(pep++);
 		double rate = *(pep++);
@@ -972,25 +994,40 @@ void updateSolver(double timeDelta)
 
 
 			register float *pp;
+			register int nextIndex = particlesNextIndex[emitterIndex];
+			register int total = particlesNum[emitterIndex];
+
 			for(int i = 0; i < count; ++i)
 			{
-				pp = _particles+(particlesNextIndex++)*PARTICLE_MEM;
-				if(particlesNextIndex==_maxParticles){
-					particlesNextIndex = 0;
+				pp = _particles + particleOffset + (nextIndex++)*PARTICLE_MEM;
+				if(nextIndex==maxPart){
+					nextIndex = 0;
+				}else{
+					++total;
 				}
 
+				float pX = x + (float)((randFract()*(xSpread))-hXSpread);
+				if(pX>screenW)pX = screenW;
+				else if(pX<0)pX = 0;
+
+				float pY = y + (float)((randFract()*(ySpread))-hYSpread);
+				if(pY>screenH)pY = screenH;
+				else if(pY<0)pY = 0;
+
 				*(pp++) = (float)((randFract()*(alphVar))+invAlphVar);
-				*(pp++) = x + (float)((randFract()*(xSpread))-hXSpread);
-				*(pp++) = y + (float)((randFract()*(ySpread))-hYSpread);
+				*(pp++) = pX;
+				*(pp++) = pY;
 				*(pp++) = 0.0;
 				*(pp++) = 0.0;
 				*(pp++) = (float)((randFract()*(massVar))+invMassVar);
 				*(pp++) = emitterIndex;
 				pp++;
 			}
-			particlesNum += count;
-			if(particlesNum > _maxParticles){
-				particlesNum = _maxParticles;
+			particlesNextIndex[emitterIndex] = nextIndex;
+			if(total<maxPart){
+				particlesNum[emitterIndex] = total;
+			}else{
+				particlesNum[emitterIndex] = maxPart;
 			}
 
 			if(decay!=0){
@@ -998,6 +1035,7 @@ void updateSolver(double timeDelta)
 				*(pep-6) = rate;
 			}
 		}
+		particleOffset += maxPart * PARTICLE_MEM;
 		++emitterIndex;
 	}
 	if(_drawFluid)drawFluidImage();
@@ -1005,13 +1043,24 @@ void updateSolver(double timeDelta)
 }
 void clearParticles()
 {
-	memset(particles, 0.0, _maxParticles*PARTICLE_MEM*sizeof(float));
-	memset(particles2, 0.0, _maxParticles*PARTICLE_MEM*sizeof(float));
+	register double *pep;
+	for(int i=0; i<particleEmittersSet; i++)
+	{
+		particlesNum[i] = 0;
+		particlesNextIndex[i] = 0;
+	}
+
+	memset(particles, 0.0, totalParticles*PARTICLE_MEM*sizeof(float));
+	memset(particles2, 0.0, totalParticles*PARTICLE_MEM*sizeof(float));
+	
 	_particles = particles;
 	_particles2 = particles2;
-	particlesNum = 0;
 }
 void changeParticleEmitter(int index,  double x, double y, double rate, double xSpread, double ySpread, double alphVar, double massVar, double decay){
+	if(index>particleEmitterMax){
+		printf("ERROR: setting emitter out of range (%i)\n", particleEmitterMax);
+		return;
+	}
 	register double *pp = particleEmitters+index*8;
 	*(pp ++) = x * screenW;
 	*(pp ++) = y * screenH;
@@ -1021,15 +1070,15 @@ void changeParticleEmitter(int index,  double x, double y, double rate, double x
 	*(pp ++) = alphVar;
 	*(pp ++) = massVar;
 	*(pp ++) = decay;
-	if(particleEmitterCount < index + 1)particleEmitterCount = index + 1;
+	if(particleEmittersSet < index + 1)particleEmittersSet = index + 1;
 }
 int addParticleEmitter(double x, double y, double rate, double xSpread, double ySpread, double alphVar, double massVar, double decay){
 	int emitterIndex = ++nextEmitterIndex;
-	if(nextEmitterIndex==PARTICLES_MAX_EMITTERS){
+	if(nextEmitterIndex==particleEmitterMax){
 		nextEmitterIndex = 0;
 	}
-	if(particleEmitterCount<PARTICLES_MAX_EMITTERS){
-		particleEmitterCount++;
+	if(particleEmittersSet<particleEmitterMax){
+		particleEmittersSet++;
 	}
 	changeParticleEmitter(emitterIndex, x, y, rate, xSpread, ySpread, alphVar, massVar, decay);
 
@@ -1077,11 +1126,6 @@ void setForceAndColour(double tx, double ty, double dx, double dy, float r, floa
 	*(bOld + index) += b;
 }
 
-/*void setDrawMode(int mode)
-{
-	drawMode = mode;
-}*/
-
 double* getParticleEmittersPos()
 {
 	return particleEmitters;
@@ -1091,13 +1135,17 @@ float** getParticlesDataPos()
 	return &_particles;
 }
 
+int* getEmittersSetPos()
+{
+	return &particleEmittersSet;
+}
 int* getParticlesCountPos()
 {
-	return &particlesNum;
+	return particlesNum;
 }
-int* getMaxParticlesPos()
+int* getParticlesMaxPos()
 {
-	return &_maxParticles;
+	return particleEmitterCounts;
 }
 int* getFluidImagePos()
 {

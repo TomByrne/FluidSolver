@@ -5,6 +5,7 @@ package fluidsolver.away3d
 	import away3d.materials.MaterialBase;
 	import away3d.primitives.PlaneGeometry;
 	import away3d.tools.commands.Merge;
+	import flash.utils.Dictionary;
 	import fluidsolver.core.IFluidRenderer;
 	import fluidsolver.core.IFluidSolver;
 	import fluidsolver.utils.CustomMemory;
@@ -23,46 +24,56 @@ package fluidsolver.away3d
 		private var _solver:IFluidSolver;
 		private var _sharedMemory:CustomMemory;
 		private var _animationSets:Vector.<FluidAnimationSet>;
+		private var _animationSetByEmitter:Dictionary;
 		private var _meshes:Vector.<Mesh>;
 		
-		public function AgalParticleRenderer(totalParticles:int, materialCreator:Function, centerX:Number=0, centerY:Number=0, particleW:Number=32, particleH:Number=32)
+		public function AgalParticleRenderer(emitterCounts:Vector.<int>, materialCreators:Array, centerX:Number=0, centerY:Number=0, particleW:Number=32, particleH:Number=32)
 		{
+			_animationSetByEmitter = new Dictionary();
 			_container = new ObjectContainer3D();
 			
 			_animationSets = new Vector.<FluidAnimationSet>();
 			_meshes = new Vector.<Mesh>();
-			var totalGroups:int = Math.ceil(totalParticles / FluidAnimationSet.MAX_PARTICLES);
-			for (var i:int = 0; i < totalGroups; i++){
-				var meshes:Vector.<Mesh> = new Vector.<Mesh>();
-				var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false);
-				
-				var count:int = Math.min(FluidAnimationSet.MAX_PARTICLES, totalParticles - (i * FluidAnimationSet.MAX_PARTICLES));
-				for (var k:int = 0; k < count; ++k) {
-					var mesh:Mesh = new Mesh(geo.clone(), null);
-					mesh.z = k;
-					meshes.push(mesh);
+			for (var j:int = 0; j < emitterCounts.length; ++j) {
+				var totalParticles:int = emitterCounts[j];
+				var materialCreator:Function = materialCreators[j%materialCreators.length];
+				var totalGroups:int = Math.ceil(totalParticles / FluidAnimationSet.MAX_PARTICLES);
+				var emitterSets:Vector.<FluidAnimationSet> = new Vector.<FluidAnimationSet>();
+				for (var i:int = 0; i < totalGroups; i++){
+					var meshes:Vector.<Mesh> = new Vector.<Mesh>();
+					var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false);
+					
+					var count:int = Math.min(FluidAnimationSet.MAX_PARTICLES, totalParticles - (i * FluidAnimationSet.MAX_PARTICLES));
+					for (var k:int = 0; k < count; ++k) {
+						var mesh:Mesh = new Mesh(geo.clone(), null);
+						mesh.z = k;
+						meshes.push(mesh);
+					}
+					
+					var receiver:Mesh = new Mesh(geo, materialCreator());
+					_container.addChild(receiver);
+					
+					var merge:Merge = new Merge(false, true);
+					merge.applyToMeshes(receiver, meshes);
+					
+					var trailAnimationSet:FluidAnimationSet = new FluidAnimationSet();
+					trailAnimationSet.offsetX = centerX;
+					trailAnimationSet.offsetY = centerY;
+					trailAnimationSet.setMaxParticles(count);
+					var trailAnimator:FluidAnimator = new FluidAnimator(trailAnimationSet);
+					receiver.animator = trailAnimator;
+					
+					_animationSets.push(trailAnimationSet);
+					emitterSets.push(trailAnimationSet);
 				}
-				
-				var receiver:Mesh = new Mesh(geo, materialCreator());
-				_container.addChild(receiver);
-				
-				var merge:Merge = new Merge(false, true);
-				merge.applyToMeshes(receiver, meshes);
-				
-				var trailAnimationSet:FluidAnimationSet = new FluidAnimationSet();
-				trailAnimationSet.offsetX = centerX;
-				trailAnimationSet.offsetY = centerY;
-				trailAnimationSet.setMaxParticles(count);
-				var trailAnimator:FluidAnimator = new FluidAnimator(trailAnimationSet);
-				receiver.animator = trailAnimator;
-			
-				_animationSets.push(trailAnimationSet);
+				_animationSetByEmitter[j] = emitterSets;
 			}
 		}
 		
-		public function setScale(minScale:Number, maxScale:Number):void {
-			for (var i:int = 0; i < _animationSets.length; ++i ) {
-				var animSet:FluidAnimationSet = _animationSets[i];
+		public function setScale(emitter:int, minScale:Number, maxScale:Number):void {
+			var emitterSets:Vector.<FluidAnimationSet> = _animationSetByEmitter[emitter];
+			for (var i:int = 0; i < emitterSets.length; ++i ) {
+				var animSet:FluidAnimationSet = emitterSets[i];
 				animSet.minScale = minScale;
 				animSet.maxScale = maxScale;
 			}

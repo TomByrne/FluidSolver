@@ -42,7 +42,7 @@
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>C:\Projects\GE\FluidSolver\testSrc\Worker_Away3d_Agal.as</path-element>
+    <path-element>C:\Projects\GE\FluidSolver\testSrc\Worker_Bitmap_Blit.as</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>60</default-frame-rate>

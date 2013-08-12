@@ -23,7 +23,7 @@ typedef unsigned __int64 uint64_t;
 
 //-----------------------------------------------------------------------------
 
-void setupSolver(int gridWidth, int gridHeight, int screenW, int screenH, int drawFluid, int isRGB, int doParticles, int maxParticles, float cullAlpha);
+void setupSolver(int gridWidth, int gridHeight, int screenW, int screenH, int drawFluid, int isRGB, int doParticles, char* emitterParticles);
 void updateSolver(double timeDelta);
 int addParticleEmitter(double x, double y, double rate, double xSpread, double ySpread, double alphVar, double massVar, double decay);
 void changeParticleEmitter(int index,  double x, double y, double rate, double xSpread, double ySpread, double alphVar, double massVar, double decay);
@@ -48,8 +48,9 @@ int getVorticityConfinement();
 double getFadeSpeed();
 double getViscosity();
 
+int* getEmittersSetPos();
 int* getParticlesCountPos();
-int* getMaxParticlesPos();
+int* getParticlesMaxPos();
 double* getParticleEmittersPos();
 float* getParticlesDataPos();
 int* getFluidImagePos();

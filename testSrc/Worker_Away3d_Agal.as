@@ -17,7 +17,8 @@ package
 	public class Worker_Away3d_Agal extends AbstractTest
 	{
 		private var view:View3D;
-		private var texture:BitmapTexture;
+		private var texture1:BitmapTexture;
+		private var texture2:BitmapTexture;
 		
 		public function Worker_Away3d_Agal() 
 		{
@@ -27,11 +28,13 @@ package
 			view.backgroundColor = 0x000000;
 			addChild(view);
 			
-			texture = new BitmapTexture(new BLACK_STAMP().bitmapData);
+			texture1 = new BitmapTexture(new BLACK_STAMP().bitmapData);
+			texture2 = new BitmapTexture(new ALPHA_STAMP().bitmapData);
 			
 			//Debug.active = true;
 			
-			var renderer:AgalParticleRenderer = new AgalParticleRenderer(PARTICLES, makeMaterial, -RENDER_W/2, RENDER_H/2);
+			var renderer:AgalParticleRenderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
+			renderer.setScale(1, 2, 4);
 			
 			view.scene.addChild(renderer.display);
 			renderer.display.scale(1.9);
@@ -41,11 +44,18 @@ package
 			addChild(new AwayStats());
 		}
 		
-		private function makeMaterial():MaterialBase {
-			var material:TextureMaterial = new TextureMaterial(texture, false);
+		private function makeMaterial1():MaterialBase {
+			var material:TextureMaterial = new TextureMaterial(texture1, false);
 			material.alphaBlending = true;
 			material.alpha = 1;
 			material.blendMode = BlendMode.ADD;
+			return material;
+		}
+		
+		private function makeMaterial2():MaterialBase {
+			var material:TextureMaterial = new TextureMaterial(texture2, false);
+			material.alphaBlending = true;
+			material.alpha = 1;
 			return material;
 		}
 		

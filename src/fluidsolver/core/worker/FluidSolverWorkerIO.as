@@ -51,9 +51,9 @@ package  fluidsolver.core.worker
 		public function setFPS(value:int, returnHandler:Function=null):void {
 			appendCall("setFPS",[value],registerCall(returnHandler));
 		}
-		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, maxParticles:int = 5000, cullAlpha:Number = 0, returnHandler:Function = null, updateHandler:Function = null):void {
+		public function setupSolver(gridWidth:int, gridHeight:int, screenW:int, screenH:int, drawFluid:Boolean, isRGB:Boolean, doParticles:Boolean, emitterCounts:Vector.<int>=null, returnHandler:Function = null, updateHandler:Function = null):void {
 			_updateHandler = updateHandler;
-			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, maxParticles, cullAlpha],registerCall(returnHandler));
+			appendCall("setupSolver",[gridWidth, gridHeight, screenW, screenH, drawFluid?1:0, isRGB?1:(drawFluid?0:-1), doParticles?1:0, emitterCounts?emitterCounts.join(","):""],registerCall(returnHandler));
 			appendCall("getViscosity",[],registerCall(_gotViscosity));
 			appendCall("getFadeSpeed",[],registerCall(_gotFadeSpeed));
 			appendCall("getVorticityConfinement",[],registerCall(_gotVorticityConfinement));
@@ -170,8 +170,14 @@ package  fluidsolver.core.worker
 			}
 			return _sharedBytes;
 		}
+		public function get emittersSetPos():int {
+			return worker.getSharedProperty("emittersSetPos");
+		}
 		public function get particlesCountPos():int {
 			return worker.getSharedProperty("particlesCountPos");
+		}
+		public function get particlesMaxPos():int {
+			return worker.getSharedProperty("particlesMaxPos");
 		}
 		public function get particlesDataPos():int {
 			return worker.getSharedProperty("particlesDataPos");

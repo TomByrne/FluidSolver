@@ -100,8 +100,10 @@ package  fluidsolver.core.worker
 				_worker.setSharedProperty("sharedBytes", ApplicationDomain.currentDomain.domainMemory);
 				
 				_worker.setSharedProperty("fluidImagePos", FluidSolverCrossbridge.getFluidImagePos());
-				_worker.setSharedProperty("maxParticlesPos", FluidSolverCrossbridge.getMaxParticlesPos());
+				_worker.setSharedProperty("emittersSetPos", FluidSolverCrossbridge.getEmittersSetPos());
+				_worker.setSharedProperty("maxParticlesPos", FluidSolverCrossbridge.getParticlesMaxPos());
 				_worker.setSharedProperty("particlesCountPos", FluidSolverCrossbridge.getParticlesCountPos());
+				_worker.setSharedProperty("particlesMaxPos", FluidSolverCrossbridge.getParticlesMaxPos());
 				_worker.setSharedProperty("particlesDataPos", FluidSolverCrossbridge.getParticlesDataPos());
 				_worker.setSharedProperty("particleEmittersPos", FluidSolverCrossbridge.getParticleEmittersPos());
 			

@@ -27,9 +27,10 @@ package
 		public static const RENDER_W:uint = 960;
 		public static const RENDER_H:uint = 540;
 		public static const GRID_W:uint = 150;
-		public static const PARTICLES:uint = 2000;
 		
 		public static const VELOCITY_MULTIPLIER:Number = 100;
+		
+		public static const PARTICLES:Vector.<int> = Vector.<int>([5000, 2000]);
 		
 		private var _fluidSolver:IFluidSolver;
 		private var _fluidRenderer:IFluidRenderer;
@@ -54,10 +55,12 @@ package
 			_renderFluid = renderFluid;
 			_doParticles = doParticles;
 			
-			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES, 0,  onFluidSetup, fluidUpdate);
+			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES,  onFluidSetup, fluidUpdate);
 			_fluidSolver.setFPS(30);
 			_fluidSolver.setGravity(0, -0.05);
 			//_fluidSolver.setWrapping(true, true);
+			
+			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 30, 30, 0.3, 0.7, 1);
 			
 			// set up the jet stream
 			/*const start:Number = 300;
