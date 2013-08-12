@@ -28,10 +28,11 @@ static const double FLUID_DEFAULT_FADESPEED				= 0.003;
 static const int FLUID_DEFAULT_SOLVER_ITERATIONS		= 10;
 static const int FLUID_DEFAULT_VORTICITY_CONFINEMENT 	= 0;
 
-static const double MOMENTUM 							= 0.5;
-static const double FLUID_FORCE 						= 0.6;
+static const double MOMENTUM 							= 0.3;
+static const double FLUID_FORCE 						= 0.95;
 
 static const int PARTICLE_MEM 	 						= 8;
+static const int EMITTER_MEM 	 						= 11;
 
 int gridW;
 int gridH;
@@ -294,7 +295,7 @@ void reset()
 
 	fluidsImage = (int*)calloc( gridW*gridH, sizeof(int) );
 
-	particleEmitters = (double*)calloc( particleEmitterMax*8, sizeof(double) );
+	particleEmitters = (double*)calloc( particleEmitterMax*EMITTER_MEM, sizeof(double) );
 
     for(int i=0; i<particleEmitterMax; i++){
 		particlesNum[i] = 0;
@@ -335,77 +336,97 @@ void drawFluidImage()
 	}
 }
 
-void updateParticles()
+void updateParticles(float timeDelta)
 {
 	register float *pp;
 	register float *pp2;
 	int fluidIndex;
-	float x, y, vx, vy, alpha, mass, emitter;
+	float x, y, vx, vy, age, mass;
+	double emitter;
 
 	int cnt = 0;
 
-	for( pp = _particles, pp2 = _particles2; pp < _particles+totalParticles*PARTICLE_MEM; )
+
+	int particleOffset = 0;
+	double *pep = particleEmitters;
+	for(int i=0; i<particleEmittersSet; ++i)
 	{
-		alpha = *(pp++);
-		x = *(pp++);
-		y = *(pp++);
-		vx = *(pp++);
-		vy = *(pp++);
-		mass = *(pp++);
-		emitter = *(pp++);
-		pp++;
 
-		fluidIndex = (int)(x*isw*gridW+1.5) + (int)(y*ish*gridH+1.5) * gridW2;
-		vx = u[fluidIndex] * screenW * mass * FLUID_FORCE + vx * MOMENTUM;
-		vy = v[fluidIndex] * screenH * mass * FLUID_FORCE + vy * MOMENTUM;
+		int maxPart = particleEmitterCounts[i];
+		double particleDecay = *(pep+8);
+		register int total = particlesNum[i];
 
-		x += vx;
-		y += vy;
+		for( int j=0; j<total; j++)
+		{
+			float *pp = _particles + particleOffset + j * PARTICLE_MEM;
+			float *pp2 = _particles2 + particleOffset + j * PARTICLE_MEM;
 
-		if (x < 1.) {
-			if (wrap_x == 1) {
-				x = screenW-1;
-			} else {
-				x = 1.0;
-				vx *= -1.0;
+			age = *(pp++);
+			x = *(pp++);
+			y = *(pp++);
+			vx = *(pp++);
+			vy = *(pp++);
+			mass = *(pp++);
+			emitter = *(pp++);
+			pp++;
+
+			fluidIndex = (int)(x*isw*gridW+1.5) + (int)(y*ish*gridH+1.5) * gridW2;
+			vx = u[fluidIndex] * screenW * mass * FLUID_FORCE + vx * MOMENTUM;
+			vy = v[fluidIndex] * screenH * mass * FLUID_FORCE + vy * MOMENTUM;
+
+			float newX = x + vx;
+			float newY = y + vy;
+			x = newX * timeDelta + x * (1 - timeDelta);
+			y = newY * timeDelta + y * (1 - timeDelta);
+
+			if (x < 1.) {
+				if (wrap_x == 1) {
+					x = screenW-1;
+				} else {
+					x = timeDelta;
+					vx *= -timeDelta;
+				}
 			}
-		}
-		else if (x > screenW) {
-			if (wrap_x == 1) {
-				x = 1;
-			} else {
-				x = screenW - 1;
-				vx *= -1.0;
+			else if (x > screenW) {
+				if (wrap_x == 1) {
+					x = timeDelta;
+				} else {
+					x = screenW - 1;
+					vx *= -timeDelta;
+				}
 			}
-		}
 
-		if (y < 1.) {
-			if (wrap_y == 1) {
-				y = screenH - 1;
-			} else {
-				y = 1.0;
-				vy *= -1.0;
+			if (y < 1.) {
+				if (wrap_y == 1) {
+					y = screenH - 1;
+				} else {
+					y = timeDelta;
+					vy *= -timeDelta;
+				}
 			}
-		}
-		else if (y > screenH) {
-			if (wrap_y == 1) {
-				y = 1;
-			} else {
-				y = screenH - 1;
-				vy *= -1.0;
+			else if (y > screenH) {
+				if (wrap_y == 1) {
+					y = timeDelta;
+				} else {
+					y = screenH - 1;
+					vy *= -timeDelta;
+				}
 			}
+
+			age = (timeDelta * age * particleDecay) + (age * (1 - timeDelta));
+
+			
+			*(pp2++) = age;
+			*(pp2++) = x;
+			*(pp2++) = y;
+			*(pp2++) = vx;
+			*(pp2++) = vy;
+			*(pp2++) = mass;
+			*(pp2++) = emitter;
+			pp2++;
 		}
-
-		alpha = alpha * 0.996;
-
-		*(pp2++) = alpha;
-		*(pp2++) = x;
-		*(pp2++) = y;
-		*(pp2++) = vx;
-		*(pp2++) = vy;
-		*(pp2++) = mass;
-		*(pp2++) = emitter;
-		pp2++;
+		particleOffset += maxPart * PARTICLE_MEM;
+		pep += EMITTER_MEM;
 	}
 	register float *tmp = _particles;
 	_particles = _particles2;
@@ -973,16 +994,19 @@ void updateSolver(double timeDelta)
 		double rate = *(pep++);
 		double xSpread = *(pep++);
 		double ySpread = *(pep++);
-		double alphVar = *(pep++);
+		double ageVar = *(pep++);
 		double massVar = *(pep++);
-		double decay = *(pep++);
+		double emitterDecay = *(pep++);
+		double particleDecay = *(pep++);
+		double initVX = *(pep++);
+		double initVY = *(pep++);
 
 		if(rate>0){
 
 			float hXSpread = xSpread/2;
 			float hYSpread = ySpread/2;
-			float invAlphVar = 1-alphVar;
 			float invMassVar = 1-massVar;
+			float invAgeVar = 1-ageVar;
 
 			float timeRate = _dt*rate;
 
@@ -1014,12 +1038,12 @@ void updateSolver(double timeDelta)
 				if(pY>screenH)pY = screenH;
 				else if(pY<0)pY = 0;
 
-				*(pp++) = (float)((randFract()*(alphVar))+invAlphVar);
+				*(pp++) = (float)(randFract()*(ageVar)+invAgeVar);
 				*(pp++) = pX;
 				*(pp++) = pY;
-				*(pp++) = 0.0;
-				*(pp++) = 0.0;
-				*(pp++) = (float)((randFract()*(massVar))+invMassVar);
+				*(pp++) = initVX;
+				*(pp++) = initVY;
+				*(pp++) = (float)(randFract()*(massVar)+invMassVar);
 				*(pp++) = emitterIndex;
 				pp++;
 			}
@@ -1030,8 +1054,8 @@ void updateSolver(double timeDelta)
 				particlesNum[emitterIndex] = maxPart;
 			}
 
-			if(decay!=0){
-				rate *= decay;
+			if(emitterDecay!=0){
+				rate *= emitterDecay;
 				*(pep-6) = rate;
 			}
 		}
@@ -1039,7 +1063,7 @@ void updateSolver(double timeDelta)
 		++emitterIndex;
 	}
 	if(_drawFluid)drawFluidImage();
-	if(_doParticles)updateParticles();
+	if(_doParticles)updateParticles(timeDelta);
 }
 void clearParticles()
 {
@@ -1056,23 +1080,26 @@ void clearParticles()
 	_particles = particles;
 	_particles2 = particles2;
 }
-void changeParticleEmitter(int index,  double x, double y, double rate, double xSpread, double ySpread, double alphVar, double massVar, double decay){
+void changeParticleEmitter(int index,  double x, double y, double rate, double xSpread, double ySpread, double ageVar, double massVar, double emitterDecay, double particleDecay, double initVX, double initVY){
 	if(index>particleEmitterMax){
 		printf("ERROR: setting emitter out of range (%i)\n", particleEmitterMax);
 		return;
 	}
-	register double *pp = particleEmitters+index*8;
+	register double *pp = particleEmitters+index*EMITTER_MEM;
 	*(pp ++) = x * screenW;
 	*(pp ++) = y * screenH;
 	*(pp ++) = rate;
 	*(pp ++) = xSpread;
 	*(pp ++) = ySpread;
-	*(pp ++) = alphVar;
+	*(pp ++) = ageVar;
 	*(pp ++) = massVar;
-	*(pp ++) = decay;
+	*(pp ++) = emitterDecay;
+	*(pp ++) = particleDecay;
+	*(pp ++) = initVX;
+	*(pp ++) = initVY;
 	if(particleEmittersSet < index + 1)particleEmittersSet = index + 1;
 }
-int addParticleEmitter(double x, double y, double rate, double xSpread, double ySpread, double alphVar, double massVar, double decay){
+int addParticleEmitter(double x, double y, double rate, double xSpread, double ySpread, double ageVar, double massVar, double emitterDecay, double particleDecay, double initVX, double initVY){
 	int emitterIndex = ++nextEmitterIndex;
 	if(nextEmitterIndex==particleEmitterMax){
 		nextEmitterIndex = 0;
@@ -1080,7 +1107,7 @@ int addParticleEmitter(double x, double y, double rate, double xSpread, double y
 	if(particleEmittersSet<particleEmitterMax){
 		particleEmittersSet++;
 	}
-	changeParticleEmitter(emitterIndex, x, y, rate, xSpread, ySpread, alphVar, massVar, decay);
+	changeParticleEmitter(emitterIndex, x, y, rate, xSpread, ySpread, ageVar, massVar, emitterDecay, particleDecay, initVX, initVY);
 
 	return emitterIndex;
 }

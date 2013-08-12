@@ -60,7 +60,7 @@ package
 			_fluidSolver.setGravity(0, -0.05);
 			//_fluidSolver.setWrapping(true, true);
 			
-			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 30, 30, 0.3, 0.7, 1);
+			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 30, 30, 0.3, 0.7, 1, 0.999, 0, 0);
 			
 			// set up the jet stream
 			/*const start:Number = 300;
@@ -102,7 +102,7 @@ package
 				_fluidSolver.setForce(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
 			}
 			if(_doParticles){
-				_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 30, 30, 0.3, 0.7, 0.9);
+				_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 30, 30, 0.3, 0.7, 0.9, 0.9, 0, 0);
 			}
 			
 			_lastMousePoint.x = mouseX;

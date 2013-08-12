@@ -56,12 +56,12 @@ package fluidsolver.core
 			_updateTimer.start();
 			_updateHandler = updateHandler;
 		}
-		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function = null):void {
-			var ret:int = FluidSolverCrossbridge.addParticleEmitter(x, y, rate, xSpread, ySpread, alphVar, massVar, decay);
+		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function = null):void {
+			var ret:int = FluidSolverCrossbridge.addParticleEmitter(x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY);
 			if(returnHandler!=null)returnHandler(ret);
 		}
-		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
-			FluidSolverCrossbridge.changeParticleEmitter(index, x, y, rate, xSpread, ySpread, alphVar, massVar, decay);
+		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function=null):void {
+			FluidSolverCrossbridge.changeParticleEmitter(index, x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY);
 			if(returnHandler!=null)returnHandler();
 		}
 		public function updateSolver(timeDelta:Number, returnHandler:Function=null):void {

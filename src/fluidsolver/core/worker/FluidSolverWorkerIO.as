@@ -60,11 +60,11 @@ package  fluidsolver.core.worker
 			appendCall("getSolverIterations",[],registerCall(_gotSolverIterations));
 			appendCall("getColorDiffusion",[],registerCall(_gotColorDiffusion));
 		}
-		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
-			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, alphVar, massVar, decay],registerCall(returnHandler));
+		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function=null):void {
+			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY],registerCall(returnHandler));
 		}
-		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, alphVar:Number, massVar:Number, decay:Number, returnHandler:Function=null):void {
-			appendCall("changeParticleEmitter",[index, x, y, rate, xSpread, ySpread, alphVar, massVar, decay],registerCall(returnHandler));
+		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function=null):void {
+			appendCall("changeParticleEmitter",[index, x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY],registerCall(returnHandler));
 		}
 		public function updateSolver(timeDelta:Number, returnHandler:Function=null):void {
 			appendCall("updateSolver",[timeDelta],registerCall(returnHandler));
