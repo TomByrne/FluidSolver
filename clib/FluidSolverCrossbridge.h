@@ -25,8 +25,9 @@ typedef unsigned __int64 uint64_t;
 
 void setupSolver(int gridWidth, int gridHeight, int screenW, int screenH, int drawFluid, int isRGB, int doParticles, char* emitterParticles);
 void updateSolver(double timeDelta);
-int addParticleEmitter(double x, double y, double rate, double xSpread, double ySpread, double ageVar, double massVar, double emitterDecay, double particleDecay, double initVX, double initVY);
-void changeParticleEmitter(int index,  double x, double y, double rate, double xSpread, double ySpread, double ageVar, double massVar, double emitterDecay, double particleDecay, double initVX, double initVY);
+int addParticleEmitter(double x, double y, double rate, double emitterDecay, double particleDecay, double initVX, double initVY, double initMass);
+void changeParticleEmitter(int index,  double x, double y, double rate, double emitterDecay, double particleDecay, double initVX, double initVY, double initMass);
+void changeEmitterVariance(int index, double xSpread, double ySpread, double ageVar, double massVar);
 void clearParticles();
 
 void setForce(double tx, double ty, double dx, double dy);

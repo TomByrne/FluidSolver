@@ -61,11 +61,14 @@ package  fluidsolver.core.worker
 			appendCall("getColorDiffusion",[],registerCall(_gotColorDiffusion));
 			appendCall("getFluidForce",[],registerCall(_gotFluidForce));
 		}
-		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function=null):void {
-			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY],registerCall(returnHandler));
+		public function addParticleEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function=null):void {
+			appendCall("addParticleEmitter",[x, y, rate, emDecay, partDecay, initVX, initVY, initMass],registerCall(returnHandler));
 		}
-		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function=null):void {
-			appendCall("changeParticleEmitter",[index, x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY],registerCall(returnHandler));
+		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function=null):void {
+			appendCall("changeParticleEmitter",[index, x, y, rate, emDecay, partDecay, initVX, initVY, initMass],registerCall(returnHandler));
+		}
+		public function changeEmitterVariance(index:int, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, returnHandler:Function=null):void {
+			appendCall("changeEmitterVariance",[index, xSpread, ySpread, ageVar, massVar],registerCall(returnHandler));
 		}
 		public function updateSolver(timeDelta:Number, returnHandler:Function=null):void {
 			appendCall("updateSolver",[timeDelta],registerCall(returnHandler));

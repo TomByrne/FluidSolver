@@ -30,7 +30,7 @@ package
 		
 		public static const VELOCITY_MULTIPLIER:Number = 100;
 		
-		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 200, 200]);
+		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 200]);
 		
 		private var _fluidSolver:IFluidSolver;
 		private var _fluidRenderer:IFluidRenderer;
@@ -61,8 +61,10 @@ package
 			//_fluidSolver.setWrapping(true, true);
 			_fluidSolver.fluidForce = 50;
 			
-			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 30, 30, 0, 0, 1, 0.9999, 10, 0);
-			_fluidSolver.changeParticleEmitter(2, 0.1, 0.5, 4, 0, 0, 0, 0, 1, 0.99, 0, 0);
+			_fluidSolver.changeEmitterVariance(0, 30, 30, 0.3, 0.7);
+			
+			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 1, 0.9999, 10, 0, 1);
+			_fluidSolver.changeEmitterVariance(1, 30, 30, 0, 0);
 			
 			// set up the jet stream
 			/*const start:Number = 300;
@@ -104,7 +106,7 @@ package
 				_fluidSolver.setForce(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
 			}
 			if(_doParticles){
-				_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 30, 30, 0.3, 0.7, 0.9, 0.9, 0, 0);
+				_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 0.9, 0.9, 0, 0, 1);
 			}
 			
 			_lastMousePoint.x = mouseX;

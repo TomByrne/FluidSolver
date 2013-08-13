@@ -29,6 +29,9 @@ package fluidsolver.away3d
 		public var minScale:Number = 1;
 		public var maxScale:Number = 5;
 		
+		public var minAlpha:Number = 0;
+		public var maxAlpha:Number = 1;
+		
 		public var offsetX:Number = 0;
 		public var offsetY:Number = 0;
 		
@@ -83,12 +86,13 @@ package fluidsolver.away3d
 		 */
 		public function activate(stage3DProxy:Stage3DProxy, pass:MaterialPassBase):void
 		{
+			
 			var context : Context3D = stage3DProxy._context3D;
 			if (_particleData) {
 				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 5, Vector.<Number>([minScale, maxScale-minScale, offsetX, offsetY]), 1);
 				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, Vector.<Number>([0, 1, 2, 6]), 1);
 				
-				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 4, Vector.<Number>([0, 1, 2, 0xff]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 4, Vector.<Number>([1, minAlpha, maxAlpha-minAlpha, 0]), 1);
 				
 				var regCount:int = Math.ceil(_maxParticles * 2);
 				_particleData.position = 0;
@@ -109,25 +113,38 @@ package fluidsolver.away3d
 		 */
 		public function getAGALFragmentCode(pass:MaterialPassBase, shadedTarget:String, profile:String):String
 		{
+			var const1:String = "fc4.x";
+			var minAlpha:String = "fc4.y";
+			var alphaRange:String = "fc4.z";
+			
 			if(pass.material.blendMode == BlendMode.MULTIPLY || pass.material.blendMode == BlendMode.DARKEN){
-				return  "sub ft2.x, fc4.y, v1.x \n" +   // 1 - alpha
+				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
+						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
 						
-						"mul ft0.x, ft0.x, v1.x \n" +   // multiply r by alpha
+						"sub ft2.x, "+const1+", ft1.w \n" +   // 1 - alpha
+						
+						"mul ft0.x, ft0.x, ft1.w \n" +   // multiply r by alpha
 						"add ft0.x, ft0.x, ft2.x \n" +  // add 1- alpha to r
 						
-						"mul ft0.y, ft0.y, v1.x \n" +  // multiply b by alpha
+						"mul ft0.y, ft0.y, ft1.w \n" +  // multiply b by alpha
 						"add ft0.y, ft0.y, ft2.x \n" +  // add 1- alpha to b
 						
-						"mul ft0.z, ft0.z, v1.x \n" +  // multiply g by alpha
+						"mul ft0.z, ft0.z, ft1.w \n" +  // multiply g by alpha
 						"add ft0.z, ft0.z, ft2.x \n";  // add 1- alpha to g
 						
 			}else if (pass.material.blendMode == BlendMode.ADD || pass.material.blendMode == BlendMode.LIGHTEN) {
-				return  "mul ft0.x, ft0.x, v1.x \n" +  // multiply r by a
-						"mul ft0.y, ft0.y, v1.x \n" +  // multiply b by a
-						"mul ft0.z, ft0.z, v1.x \n";   // multiply g by a
+				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
+						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
+						
+						"mul ft0.x, ft0.x, ft1.w \n" +  // multiply r by a
+						"mul ft0.y, ft0.y, ft1.w \n" +  // multiply b by a
+						"mul ft0.z, ft0.z, ft1.w \n";   // multiply g by a
 						
 			}else if(pass.material.blendMode == BlendMode.NORMAL){
-				return  "mul ft0.w, ft0.w, v1.x \n" ;  // multiply a by particle alpha
+				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
+						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
+						
+						"mul ft0.w, ft0.w, ft1.w \n" ;  // multiply a by particle alpha
 				
 			}else {
 				throw new Error("Unsupported blend mode");
