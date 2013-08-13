@@ -17,7 +17,7 @@ void advectRGB(double *du, double *dv);
 void project(double *x, double *y, double *p, double *div);
 void setBoundary(int bound, double *x);
 void setBoundaryRGB();
-void drawLine(int *layer, int x0, int y0, int x1, int y1, int c);
+//void drawLine(int *layer, int x0, int y0, int x1, int y1, int c);
 int compareParticles(const void *vp1, const void *vp2);
 
 
@@ -28,8 +28,7 @@ static const double FLUID_DEFAULT_FADESPEED				= 0.003;
 static const int FLUID_DEFAULT_SOLVER_ITERATIONS		= 10;
 static const int FLUID_DEFAULT_VORTICITY_CONFINEMENT 	= 0;
 
-static const double MOMENTUM 							= 0.3;
-static const double FLUID_FORCE 						= 0.95;
+static const double FLUID_DEFAULT_FORCE 				= 50;
 
 static const int PARTICLE_MEM 	 						= 8;
 static const int EMITTER_MEM 	 						= 11;
@@ -63,6 +62,8 @@ int wrap_y = 0;
 
 double _visc;
 double _fadeSpeed;
+
+double _fluidForce;
 
 double _avgDensity;			// this will hold the average color of the last frame (how full it is)
 double _uniformity;			// this will hold the uniformity of the last frame (how uniform the color is);
@@ -129,8 +130,8 @@ inline void addSourceUV()
 
 	for(up = u, vp = v, uop = uOld, vop = vOld; up < u+numCells;)
 	{
-		*(up++) += (_dt * (*(uop++) + gravityX));
-		*(vp++) += (_dt * (*(vop++) + gravityY));
+		*(up++) += (_dt * *(uop++));
+		*(vp++) += (_dt * *(vop++));
 	}
 }
 
@@ -207,44 +208,44 @@ inline void swapRGB()
 	bOld = _tmp;
 }
 
-inline void drawLine(int *layer, int x0, int y0, int x1, int y1, const int c)
-{
-	int dy = y1 - y0;
-	int dx = x1 - x0;
-	int stepx, stepy, fraction;
+// inline void drawLine(int *layer, int x0, int y0, int x1, int y1, const int c)
+// {
+// 	int dy = y1 - y0;
+// 	int dx = x1 - x0;
+// 	int stepx, stepy, fraction;
 
-	if (dy < 0) { dy = -dy;  stepy = -screenW; } else { stepy = screenW; }
-	if (dx < 0) { dx = -dx;  stepx = -1; } else { stepx = 1; }
-	dy <<= 1;
-	dx <<= 1;
+// 	if (dy < 0) { dy = -dy;  stepy = -screenW; } else { stepy = screenW; }
+// 	if (dx < 0) { dx = -dx;  stepx = -1; } else { stepx = 1; }
+// 	dy <<= 1;
+// 	dx <<= 1;
 
-	y0 *= screenW;
-	y1 *= screenW;
-	layer[x0+y0] = c;
-	if (dx > dy) {
-		fraction = dy - (dx>>1);
-		while (x0 != x1) {
-			if (fraction >= 0) {
-				y0 += stepy;
-				fraction -= dx;
-			}
-			x0 += stepx;
-			fraction += dy;
-			layer[x0+y0] = c;
-		}
-	} else {
-		fraction = dx - (dy>>1);
-		while (y0 != y1) {
-			if (fraction >= 0) {
-				x0 += stepx;
-				fraction -= dy;
-			}
-			y0 += stepy;
-			fraction += dx;
-			layer[x0+y0] = c;
-		}
-	}
-}
+// 	y0 *= screenW;
+// 	y1 *= screenW;
+// 	layer[x0+y0] = c;
+// 	if (dx > dy) {
+// 		fraction = dy - (dx>>1);
+// 		while (x0 != x1) {
+// 			if (fraction >= 0) {
+// 				y0 += stepy;
+// 				fraction -= dx;
+// 			}
+// 			x0 += stepx;
+// 			fraction += dy;
+// 			layer[x0+y0] = c;
+// 		}
+// 	} else {
+// 		fraction = dx - (dy>>1);
+// 		while (y0 != y1) {
+// 			if (fraction >= 0) {
+// 				x0 += stepx;
+// 				fraction -= dy;
+// 			}
+// 			y0 += stepy;
+// 			fraction += dx;
+// 			layer[x0+y0] = c;
+// 		}
+// 	}
+// }
 
 void destroy()
 {
@@ -371,8 +372,16 @@ void updateParticles(float timeDelta)
 			pp++;
 
 			fluidIndex = (int)(x*isw*gridW+1.5) + (int)(y*ish*gridH+1.5) * gridW2;
-			vx = u[fluidIndex] * screenW * mass * FLUID_FORCE + vx * MOMENTUM;
-			vy = v[fluidIndex] * screenH * mass * FLUID_FORCE + vy * MOMENTUM;
+			float forceX = _fluidForce * u[fluidIndex];
+			if(forceX<0)forceX = -forceX;
+			if(forceX>1)forceX = 1;
+
+			float forceY = _fluidForce * v[fluidIndex];
+			if(forceY<0)forceY = -forceY;
+			if(forceY>1)forceY = 1;
+
+			vx = u[fluidIndex] * screenW * mass * forceX + vx * (1-forceX) + gravityX * timeDelta;
+			vy = v[fluidIndex] * screenH * mass * forceY + vy * (1-forceY) + gravityY * timeDelta;
 
 			float newX = x + vx;
 			float newY = y + vy;
@@ -899,6 +908,7 @@ void setupSolver(int gridWidth, int gridHeight, int screenWidth, int screenHeigh
 	_solverIterations = FLUID_DEFAULT_SOLVER_ITERATIONS;
 	_colorDiffusion = FLUID_DEFAULT_COLOR_DIFFUSION;
 	_doVorticityConfinement = FLUID_DEFAULT_VORTICITY_CONFINEMENT;
+	_fluidForce = FLUID_DEFAULT_FORCE;
 
 	// strtok can modify string so make a copy
 	char *emitterParticles2 = (char*)calloc(1, sizeof(emitterParticles));
@@ -1054,9 +1064,9 @@ void updateSolver(double timeDelta)
 				particlesNum[emitterIndex] = maxPart;
 			}
 
-			if(emitterDecay!=0){
+			if(emitterDecay!=0 && emitterDecay!=1){
 				rate *= emitterDecay;
-				*(pep-6) = rate;
+				*(particleEmitters+emitterIndex*EMITTER_MEM+2) = rate;
 			}
 		}
 		particleOffset += maxPart * PARTICLE_MEM;
@@ -1184,6 +1194,10 @@ void setWrapping(int wrapX, int wrapY)
 	wrap_y = wrapY;
 }
 
+void setFluidForce(double fluidForce)
+{
+	_fluidForce = fluidForce;
+}
 void setColorDiffusion(double colorDiffusion)
 {
 	_colorDiffusion = colorDiffusion;
@@ -1205,6 +1219,10 @@ void setViscosity(double viscosity)
 	_visc = viscosity;
 }
 
+double getFluidForce()
+{
+	return _fluidForce;
+}
 double getColorDiffusion()
 {
 	return _colorDiffusion;
@@ -1228,6 +1246,7 @@ double getViscosity()
 
 void setGravity(float x, float y)
 {
-	gravityX = x / 1000;
-	gravityY = y / 1000;
+	gravityX = x / 10;
+	gravityY = y / 10;
+
 }

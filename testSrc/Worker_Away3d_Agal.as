@@ -34,7 +34,7 @@ package
 			//Debug.active = true;
 			
 			var renderer:AgalParticleRenderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
-			renderer.setScale(1, 2, 4);
+			renderer.setScale(1, 1, 30);
 			
 			view.scene.addChild(renderer.display);
 			renderer.display.scale(1.9);

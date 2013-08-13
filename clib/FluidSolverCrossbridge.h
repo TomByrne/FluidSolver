@@ -36,12 +36,14 @@ void setGravity(float x, float y);
 
 void setWrapping(int wrapX, int wrapY);
 
+void setFluidForce(double fluidForce);
 void setColorDiffusion(double colorDiffusion);
 void setSolverIterations(int solverIterations);
 void setVorticityConfinement(int doVorticityConfinement);
 void setFadeSpeed(double fadeSpeed);
 void setViscosity(double viscosity);
 
+double getFluidForce();
 double getColorDiffusion();
 int getSolverIterations();
 int getVorticityConfinement();

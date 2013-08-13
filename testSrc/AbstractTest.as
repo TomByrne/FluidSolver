@@ -30,7 +30,7 @@ package
 		
 		public static const VELOCITY_MULTIPLIER:Number = 100;
 		
-		public static const PARTICLES:Vector.<int> = Vector.<int>([5000, 2000]);
+		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 200, 200]);
 		
 		private var _fluidSolver:IFluidSolver;
 		private var _fluidRenderer:IFluidRenderer;
@@ -57,10 +57,12 @@ package
 			
 			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES,  onFluidSetup, fluidUpdate);
 			_fluidSolver.setFPS(30);
-			_fluidSolver.setGravity(0, -0.05);
+			//_fluidSolver.setGravity(0, 10);
 			//_fluidSolver.setWrapping(true, true);
+			_fluidSolver.fluidForce = 50;
 			
-			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 30, 30, 0.3, 0.7, 1, 0.999, 0, 0);
+			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 30, 30, 0, 0, 1, 0.9999, 10, 0);
+			_fluidSolver.changeParticleEmitter(2, 0.1, 0.5, 4, 0, 0, 0, 0, 1, 0.99, 0, 0);
 			
 			// set up the jet stream
 			/*const start:Number = 300;

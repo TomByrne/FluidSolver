@@ -59,6 +59,7 @@ package  fluidsolver.core.worker
 			appendCall("getVorticityConfinement",[],registerCall(_gotVorticityConfinement));
 			appendCall("getSolverIterations",[],registerCall(_gotSolverIterations));
 			appendCall("getColorDiffusion",[],registerCall(_gotColorDiffusion));
+			appendCall("getFluidForce",[],registerCall(_gotFluidForce));
 		}
 		public function addParticleEmitter(x:Number, y:Number, rate:Number, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, returnHandler:Function=null):void {
 			appendCall("addParticleEmitter",[x, y, rate, xSpread, ySpread, ageVar, massVar, emDecay, partDecay, initVX, initVY],registerCall(returnHandler));
@@ -208,6 +209,9 @@ package  fluidsolver.core.worker
 		private function _gotColorDiffusion(value:Number):void {
 			_colorDiffusion = value;
 		}
+		private function _gotFluidForce(value:Number):void {
+			_fluidForce = value;
+		}
 		
 		private var _speed:Number = 1;
 		public function get speed():Number {
@@ -261,6 +265,15 @@ package  fluidsolver.core.worker
 		public function set colorDiffusion(value:Number):void {
 			_colorDiffusion = value;
 			appendCall("setColorDiffusion",[value],-1);
+		}
+		
+		private var _fluidForce:Number;
+		public function get fluidForce():Number {
+			return _fluidForce;
+		}
+		public function set fluidForce(value:Number):void {
+			_fluidForce = value;
+			appendCall("setFluidForce",[value],-1);
 		}
 	}
 

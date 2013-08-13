@@ -43,6 +43,9 @@ package fluidsolver.core
 		function get colorDiffusion():Number;
 		function set colorDiffusion(value:Number):void;
 		
+		function get fluidForce():Number;
+		function set fluidForce(value:Number):void;
+		
 		function get sharedBytes():ByteArray;
 		function get emittersSetPos():int;
 		function get particlesCountPos():int;

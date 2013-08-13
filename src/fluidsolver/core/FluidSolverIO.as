@@ -163,6 +163,13 @@ package fluidsolver.core
 		public function set colorDiffusion(value:Number):void {
 			FluidSolverCrossbridge.setColorDiffusion(value);
 		}
+		
+		public function get fluidForce():Number {
+			return FluidSolverCrossbridge.getFluidForce();
+		}
+		public function set fluidForce(value:Number):void {
+			FluidSolverCrossbridge.setFluidForce(value);
+		}
 	}
 
 }
