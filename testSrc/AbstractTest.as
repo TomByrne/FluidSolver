@@ -32,9 +32,9 @@ package
 		
 		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 200]);
 		
-		private var _fluidSolver:IFluidSolver;
-		private var _fluidRenderer:IFluidRenderer;
-		private var _lastMousePoint:Point;
+		protected var _fluidSolver:IFluidSolver;
+		protected var _fluidRenderer:IFluidRenderer;
+		protected var _lastMousePoint:Point;
 		
 		private var _renderFluid:Boolean;
 		private var _doParticles:Boolean;

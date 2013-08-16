@@ -88,6 +88,20 @@ package fluidsolver.away3d
 			}
 		}
 		
+		public function setColorTrans(emitter:int, rM:Number=1, gM:Number=1, bM:Number=1, rO:Number=0, gO:Number=0, bO:Number=0):void {
+			var emitterSets:Vector.<FluidAnimationSet> = _animationSetByEmitter[emitter];
+			for (var i:int = 0; i < emitterSets.length; ++i ) {
+				var animSet:FluidAnimationSet = emitterSets[i];
+				animSet.redMultiply = rM;
+				animSet.greenMultiply = gM;
+				animSet.blueMultiply = bM;
+				
+				animSet.redOffset = rO;
+				animSet.greenOffset = gO;
+				animSet.blueOffset = bO;
+			}
+		}
+		
 		public function solverInited(fluidSolver:IFluidSolver):void {
 			_solver = fluidSolver;
 			

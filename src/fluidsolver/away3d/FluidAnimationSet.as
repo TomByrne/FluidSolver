@@ -35,10 +35,17 @@ package fluidsolver.away3d
 		public var offsetX:Number = 0;
 		public var offsetY:Number = 0;
 		
+		public var redMultiply:Number = 1;
+		public var blueMultiply:Number = 1;
+		public var greenMultiply:Number = 1;
+		
+		public var redOffset:Number = 0;
+		public var blueOffset:Number = 0;
+		public var greenOffset:Number = 0;
+		
 		public function FluidAnimationSet()
 		{
 			super();
-		
 		}
 		
 		/**
@@ -93,6 +100,8 @@ package fluidsolver.away3d
 				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, Vector.<Number>([0, 1, 2, 6]), 1);
 				
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 4, Vector.<Number>([1, minAlpha, maxAlpha-minAlpha, 0]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 5, Vector.<Number>([redMultiply, greenMultiply, blueMultiply, 0]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 6, Vector.<Number>([redOffset, greenOffset, blueOffset, 0]), 1);
 				
 				var regCount:int = Math.ceil(_maxParticles * 2);
 				_particleData.position = 0;
@@ -117,6 +126,18 @@ package fluidsolver.away3d
 			var minAlpha:String = "fc4.y";
 			var alphaRange:String = "fc4.z";
 			
+			var colorTrans:String = "";
+			
+			/*if (redMultiply != 1) */colorTrans += "mul ft0.x, ft0.x, fc5.x \n";
+			/*if (greenMultiply != 1) */colorTrans += "mul ft0.y, ft0.y, fc5.y \n";
+			/*if (blueMultiply != 1) */colorTrans += "mul ft0.z, ft0.z, fc5.z \n";
+			
+			/*if (redOffset != 1) */colorTrans += "add ft0.x, ft0.x, fc6.x \n";
+			/*if (greenOffset != 1) */colorTrans += "add ft0.y, ft0.y, fc6.y \n";
+			/*if (blueOffset != 1) */colorTrans += "add ft0.z, ft0.z, fc6.z \n";
+			
+			trace("colorTrans: "+colorTrans);
+			
 			if(pass.material.blendMode == BlendMode.MULTIPLY || pass.material.blendMode == BlendMode.DARKEN){
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
 						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
@@ -130,7 +151,7 @@ package fluidsolver.away3d
 						"add ft0.y, ft0.y, ft2.x \n" +  // add 1- alpha to b
 						
 						"mul ft0.z, ft0.z, ft1.w \n" +  // multiply g by alpha
-						"add ft0.z, ft0.z, ft2.x \n";  // add 1- alpha to g
+						"add ft0.z, ft0.z, ft2.x \n" + colorTrans;  // add 1- alpha to g
 						
 			}else if (pass.material.blendMode == BlendMode.ADD || pass.material.blendMode == BlendMode.LIGHTEN) {
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
@@ -138,13 +159,13 @@ package fluidsolver.away3d
 						
 						"mul ft0.x, ft0.x, ft1.w \n" +  // multiply r by a
 						"mul ft0.y, ft0.y, ft1.w \n" +  // multiply b by a
-						"mul ft0.z, ft0.z, ft1.w \n";   // multiply g by a
+						"mul ft0.z, ft0.z, ft1.w \n" + colorTrans;   // multiply g by a
 						
 			}else if(pass.material.blendMode == BlendMode.NORMAL){
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
 						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
 						
-						"mul ft0.w, ft0.w, ft1.w \n" ;  // multiply a by particle alpha
+						"mul ft0.w, ft0.w, ft1.w \n"  + colorTrans;  // multiply a by particle alpha
 				
 			}else {
 				throw new Error("Unsupported blend mode");

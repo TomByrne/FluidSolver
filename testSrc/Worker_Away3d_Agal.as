@@ -8,6 +8,7 @@ package
 	import away3d.textures.BitmapTexture;
 	import flash.display.BlendMode;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import fluidsolver.away3d.AgalParticleRenderer;
 	import fluidsolver.core.worker.FluidSolverWorkerIO;
 	/**
@@ -19,6 +20,7 @@ package
 		private var view:View3D;
 		private var texture1:BitmapTexture;
 		private var texture2:BitmapTexture;
+		private var renderer:AgalParticleRenderer;
 		
 		public function Worker_Away3d_Agal() 
 		{
@@ -33,7 +35,7 @@ package
 			
 			//Debug.active = true;
 			
-			var renderer:AgalParticleRenderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
+			renderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
 			renderer.setScale(1, 1, 30);
 			
 			view.scene.addChild(renderer.display);
@@ -62,6 +64,12 @@ package
 		override protected function onEnterFrame(e:Event):void {
 			super.onEnterFrame(e);
 			view.render();
+		}
+		override protected function onMouseMove(e:MouseEvent):void 
+		{
+			super.onMouseMove(e);
+			
+			renderer.setColorTrans(1, stage.mouseX / stage.stageWidth, 1,1, 0, -stage.mouseY / stage.stageHeight , 0);
 		}
 	}
 
