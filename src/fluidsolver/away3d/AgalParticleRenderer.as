@@ -26,12 +26,14 @@ package fluidsolver.away3d
 		private var _animationSets:Vector.<FluidAnimationSet>;
 		private var _animationSetByEmitter:Dictionary;
 		private var _meshes:Vector.<Mesh>;
+		private var _meshesByEmitter:Vector.<Vector.<Mesh>>;
 		
 		public function AgalParticleRenderer(emitterCounts:Vector.<int>, materialCreators:Array, centerX:Number=0, centerY:Number=0, particleW:Number=32, particleH:Number=32)
 		{
 			_animationSetByEmitter = new Dictionary();
 			_container = new ObjectContainer3D();
 			
+			_meshesByEmitter = new Vector.<Vector.<Mesh>>();
 			_animationSets = new Vector.<FluidAnimationSet>();
 			_meshes = new Vector.<Mesh>();
 			for (var j:int = 0; j < emitterCounts.length; ++j) {
@@ -39,6 +41,7 @@ package fluidsolver.away3d
 				var materialCreator:Function = materialCreators[j%materialCreators.length];
 				var totalGroups:int = Math.ceil(totalParticles / FluidAnimationSet.MAX_PARTICLES);
 				var emitterSets:Vector.<FluidAnimationSet> = new Vector.<FluidAnimationSet>();
+				var emitterMeshes:Vector.<Mesh> = new Vector.<Mesh>();
 				for (var i:int = 0; i < totalGroups; i++){
 					var meshes:Vector.<Mesh> = new Vector.<Mesh>();
 					var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false);
@@ -52,6 +55,7 @@ package fluidsolver.away3d
 					
 					var receiver:Mesh = new Mesh(geo, materialCreator());
 					_container.addChild(receiver);
+					emitterMeshes.push(receiver);
 					
 					var merge:Merge = new Merge(false, true);
 					merge.applyToMeshes(receiver, meshes);
@@ -66,6 +70,7 @@ package fluidsolver.away3d
 					_animationSets.push(trailAnimationSet);
 					emitterSets.push(trailAnimationSet);
 				}
+				_meshesByEmitter[j] = emitterMeshes;
 				_animationSetByEmitter[j] = emitterSets;
 			}
 		}
@@ -114,6 +119,13 @@ package fluidsolver.away3d
 				animSet.setDataOffset(_sharedMemory.readInt(_solver.particlesDataPos) + countOffset * (8 << 2));
 				animSet.setParticleData(_sharedMemory.byteArray);
 				countOffset += animSet.getMaxParticles();
+			}
+		}
+		public function iterateMeshes(emitter:int, func:Function):void {
+			var meshes:Vector.<Mesh> = _meshesByEmitter[emitter];
+			for (var i:int = 0; i < meshes.length; ++i ) {
+				var mesh:Mesh = meshes[i];
+				func(mesh);
 			}
 		}
 		public function update():void{}
