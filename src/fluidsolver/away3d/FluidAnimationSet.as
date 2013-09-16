@@ -136,8 +136,6 @@ package fluidsolver.away3d
 			/*if (greenOffset != 1) */colorTrans += "add ft0.y, ft0.y, fc6.y \n";
 			/*if (blueOffset != 1) */colorTrans += "add ft0.z, ft0.z, fc6.z \n";
 			
-			trace("colorTrans: "+colorTrans);
-			
 			if(pass.material.blendMode == BlendMode.MULTIPLY || pass.material.blendMode == BlendMode.DARKEN){
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
 						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a

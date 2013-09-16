@@ -28,7 +28,7 @@ package fluidsolver.away3d
 		private var _meshes:Vector.<Mesh>;
 		private var _meshesByEmitter:Vector.<Vector.<Mesh>>;
 		
-		public function AgalParticleRenderer(emitterCounts:Vector.<int>, materialCreators:Array, centerX:Number=0, centerY:Number=0, particleW:Number=32, particleH:Number=32)
+		public function AgalParticleRenderer(emitterCounts:Vector.<int>, materialCreators:Array, centerX:Number=0, centerY:Number=0, particleW:Number=32, particleH:Number=32, doubleSided:Boolean=false)
 		{
 			_animationSetByEmitter = new Dictionary();
 			_container = new ObjectContainer3D();
@@ -44,7 +44,7 @@ package fluidsolver.away3d
 				var emitterMeshes:Vector.<Mesh> = new Vector.<Mesh>();
 				for (var i:int = 0; i < totalGroups; i++){
 					var meshes:Vector.<Mesh> = new Vector.<Mesh>();
-					var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false);
+					var geo:PlaneGeometry = new PlaneGeometry(particleW, particleH, 1, 1, false, doubleSided);
 					
 					var count:int = Math.min(FluidAnimationSet.MAX_PARTICLES, totalParticles - (i * FluidAnimationSet.MAX_PARTICLES));
 					for (var k:int = 0; k < count; ++k) {
