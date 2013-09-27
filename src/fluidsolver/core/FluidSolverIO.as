@@ -56,16 +56,16 @@ package fluidsolver.core
 			_updateTimer.start();
 			_updateHandler = updateHandler;
 		}
-		public function addParticleEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void {
-			var ret:int = FluidSolverCrossbridge.addParticleEmitter(x, y, rate, emDecay, partDecay, initVX, initVY, initMass);
+		public function addEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void {
+			var ret:int = FluidSolverCrossbridge.addEmitter(x, y, rate, emDecay, partDecay, initVX, initVY, initMass);
 			if(returnHandler!=null)returnHandler(ret);
 		}
-		public function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function=null):void {
-			FluidSolverCrossbridge.changeParticleEmitter(index, x, y, rate, emDecay, partDecay, initVX, initVY, initMass);
+		public function setEmitterProps(index:int, x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function=null):void {
+			FluidSolverCrossbridge.setEmitterProps(index, x, y, rate, emDecay, partDecay, initVX, initVY, initMass);
 			if(returnHandler!=null)returnHandler();
 		}
-		public function changeEmitterVariance(index:int, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, returnHandler:Function=null):void {
-			FluidSolverCrossbridge.changeEmitterVariance(index, xSpread, ySpread, ageVar, massVar);
+		public function setEmitterVariance(index:int, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, vxVar:Number, vyVar:Number, returnHandler:Function=null):void {
+			FluidSolverCrossbridge.setEmitterVariance(index, xSpread, ySpread, ageVar, massVar, vxVar, vyVar);
 			if(returnHandler!=null)returnHandler();
 		}
 		public function updateSolver(timeDelta:Number, returnHandler:Function=null):void {

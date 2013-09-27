@@ -30,7 +30,7 @@ package
 		
 		public static const VELOCITY_MULTIPLIER:Number = 100;
 		
-		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 200]);
+		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 400, 400]);
 		
 		protected var _fluidSolver:IFluidSolver;
 		protected var _fluidRenderer:IFluidRenderer;
@@ -57,14 +57,17 @@ package
 			
 			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES,  onFluidSetup, fluidUpdate);
 			_fluidSolver.setFPS(30);
-			//_fluidSolver.setGravity(0, 10);
+			_fluidSolver.setGravity(0, 15);
 			//_fluidSolver.setWrapping(true, true);
 			_fluidSolver.fluidForce = 50;
 			
-			_fluidSolver.changeEmitterVariance(0, 30, 30, 0.3, 0.7);
+			_fluidSolver.setEmitterVariance(0, 30, 30, 0.3, 0.7, 0, 0);
 			
-			_fluidSolver.changeParticleEmitter(1, 0.5, 0.5, 0.25, 1, 0.9999, 10, 0, 1);
-			_fluidSolver.changeEmitterVariance(1, 30, 30, 0, 0);
+			_fluidSolver.setEmitterProps(1, 0.33, 0.5, 10, 1, 0.95, 0, 0, 1);
+			_fluidSolver.setEmitterVariance(1, 30, 30, 0, 0, 20, 0);
+			
+			_fluidSolver.setEmitterProps(2, 0.66, 0.5, 10, 1, 0.95, 0, 0, 1);
+			_fluidSolver.setEmitterVariance(2, 30, 30, 0, 0, 20, 0);
 			
 			// set up the jet stream
 			/*const start:Number = 300;
@@ -106,7 +109,7 @@ package
 				_fluidSolver.setForce(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
 			}
 			if(_doParticles){
-				_fluidSolver.changeParticleEmitter(0, normX, normY, 5, 0.9, 0.9, 0, 0, 1);
+				_fluidSolver.setEmitterProps(0, normX, normY, 5, 0.9, 0.9, 0, 0, 1);
 			}
 			
 			_lastMousePoint.x = mouseX;

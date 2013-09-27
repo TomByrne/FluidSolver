@@ -31,7 +31,7 @@ static const int FLUID_DEFAULT_VORTICITY_CONFINEMENT 	= 0;
 static const double FLUID_DEFAULT_FORCE 				= 50;
 
 static const int PARTICLE_MEM 	 						= 8;
-static const int EMITTER_MEM 	 						= 12;
+static const int EMITTER_MEM 	 						= 14;
 
 int gridW;
 int gridH;
@@ -354,7 +354,7 @@ void updateParticles(float timeDelta)
 	{
 
 		int maxPart = particleEmitterCounts[i];
-		double particleDecay = *(pep+8);
+		double particleDecay = *(pep+4);
 		register int total = particlesNum[i];
 
 		for( int j=0; j<total; j++)
@@ -1002,15 +1002,18 @@ void updateSolver(double timeDelta)
 		double x = *(pep++);
 		double y = *(pep++);
 		double rate = *(pep++);
-		double xSpread = *(pep++);
-		double ySpread = *(pep++);
-		double ageVar = *(pep++);
-		double massVar = *(pep++);
 		double emitterDecay = *(pep++);
 		double particleDecay = *(pep++);
 		double initVX = *(pep++);
 		double initVY = *(pep++);
 		double initMass = *(pep++);
+
+		double xSpread = *(pep++);
+		double ySpread = *(pep++);
+		double ageVar = *(pep++);
+		double massVar = *(pep++);
+		double vxVar = *(pep++);
+		double vyVar = *(pep++);
 
 		if(rate>0){
 
@@ -1051,8 +1054,8 @@ void updateSolver(double timeDelta)
 				*(pp++) = (float)(randFract()*(ageVar)+invAgeVar);
 				*(pp++) = pX;
 				*(pp++) = pY;
-				*(pp++) = initVX;
-				*(pp++) = initVY;
+				*(pp++) = (float)((randFract()-0.5)*(vxVar)+initVX);
+				*(pp++) = (float)((randFract()-0.5)*(vyVar)+initVY);
 				*(pp++) = (float)((randFract()-0.5)*(massVar)+initMass);
 				*(pp++) = emitterIndex;
 				pp++;
@@ -1090,7 +1093,7 @@ void clearParticles()
 	_particles = particles;
 	_particles2 = particles2;
 }
-void changeParticleEmitter(int index,  double x, double y, double rate, double emitterDecay, double particleDecay, double initVX, double initVY, double initMass){
+void setEmitterProps(int index,  double x, double y, double rate, double emitterDecay, double particleDecay, double initVX, double initVY, double initMass){
 	if(index>particleEmitterMax){
 		printf("ERROR: setting emitter out of range (%i)\n", particleEmitterMax);
 		return;
@@ -1099,27 +1102,29 @@ void changeParticleEmitter(int index,  double x, double y, double rate, double e
 	*(pp   ) = x * screenW;
 	*(pp +1) = y * screenH;
 	*(pp +2) = rate;
-
-	*(pp +7) = emitterDecay;
-	*(pp +8) = particleDecay;
-	*(pp +9) = initVX;
-	*(pp +10) = initVY;
-	*(pp +11) = initMass;
+	// variances go here
+	*(pp +3) = emitterDecay;
+	*(pp +4) = particleDecay;
+	*(pp +5) = initVX;
+	*(pp +6) = initVY;
+	*(pp +7) = initMass;
 	if(particleEmittersSet < index + 1)particleEmittersSet = index + 1;
 }
-void changeEmitterVariance(int index, double xSpread, double ySpread, double ageVar, double massVar){
+void setEmitterVariance(int index, double xSpread, double ySpread, double ageVar, double massVar, double vxVar, double vyVar){
 	if(index>particleEmitterMax){
 		printf("ERROR: setting emitter out of range (%i)\n", particleEmitterMax);
 		return;
 	}
 	register double *pp = particleEmitters+index*EMITTER_MEM;
-	*(pp +3) = xSpread;
-	*(pp +4) = ySpread;
-	*(pp +5) = ageVar;
-	*(pp +6) = massVar;
+	*(pp +8) = xSpread;
+	*(pp +9) = ySpread;
+	*(pp +10) = ageVar;
+	*(pp +11) = massVar;
+	*(pp +12) = vxVar;
+	*(pp +13) = vyVar;
 	if(particleEmittersSet < index + 1)particleEmittersSet = index + 1;
 }
-int addParticleEmitter(double x, double y, double rate, double emitterDecay, double particleDecay, double initVX, double initVY, double initMass){
+int addEmitter(double x, double y, double rate, double emitterDecay, double particleDecay, double initVX, double initVY, double initMass){
 	int emitterIndex = ++nextEmitterIndex;
 	if(nextEmitterIndex==particleEmitterMax){
 		nextEmitterIndex = 0;
@@ -1127,7 +1132,7 @@ int addParticleEmitter(double x, double y, double rate, double emitterDecay, dou
 	if(particleEmittersSet<particleEmitterMax){
 		particleEmittersSet++;
 	}
-	changeParticleEmitter(emitterIndex, x, y, rate, emitterDecay, particleDecay, initVX, initVY, initMass);
+	setEmitterProps(emitterIndex, x, y, rate, emitterDecay, particleDecay, initVX, initVY, initMass);
 
 	return emitterIndex;
 }

@@ -36,7 +36,11 @@ package
 			//Debug.active = true;
 			
 			renderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
-			renderer.setScale(1, 1, 30);
+			renderer.setScale(1, 0.5, 0.05);
+			
+			renderer.setScale(2, 2, 0.05);
+			renderer.setAlpha(2, 0.5, 0);
+			renderer.setColorTrans(2, 1, 2);
 			
 			view.scene.addChild(renderer.display);
 			renderer.display.scale(1.9);

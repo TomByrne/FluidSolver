@@ -15,9 +15,9 @@ package fluidsolver.core
 		 * 
 		 * @return Returns an int identifier of the particle emitter
 		 */
-		function addParticleEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void;
-		function changeParticleEmitter(index:int, x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void;
-		function changeEmitterVariance(index:int, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, returnHandler:Function = null):void;
+		function addEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void;
+		function setEmitterProps(index:int, x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void;
+		function setEmitterVariance(index:int, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, vxVar:Number, vyVar:Number, returnHandler:Function = null):void;
 		function updateSolver(timeDelta:Number, returnHandler:Function = null):void;
 		function clearParticles(returnHandler:Function = null):void;
 		function setForce(tx:Number, ty:Number, dx:Number, dy:Number, returnHandler:Function = null):void;
