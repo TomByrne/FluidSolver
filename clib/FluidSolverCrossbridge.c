@@ -28,7 +28,7 @@ static const double FLUID_DEFAULT_FADESPEED				= 0.003;
 static const int FLUID_DEFAULT_SOLVER_ITERATIONS		= 10;
 static const int FLUID_DEFAULT_VORTICITY_CONFINEMENT 	= 0;
 
-static const double FLUID_DEFAULT_FORCE 				= 50;
+static const double FLUID_DEFAULT_FORCE 				= 1;
 
 static const int PARTICLE_MEM 	 						= 8;
 static const int EMITTER_MEM 	 						= 14;
@@ -57,8 +57,8 @@ int _doVorticityConfinement = 0;
 float gravityX = 0.0;
 float gravityY = 0.0;
 
-int wrap_x = 0;
-int wrap_y = 0;
+int edgeTypeX = 0;
+int edgeTypeY = 0;
 
 double _visc;
 double _fadeSpeed;
@@ -370,55 +370,70 @@ void updateParticles(float timeDelta)
 			mass = *(pp++);
 			emitter = *(pp++);
 			pp++;
+			
+			if(age==0)continue;
 
 			fluidIndex = (int)(x*isw*gridW+1.5) + (int)(y*ish*gridH+1.5) * gridW2;
-			float forceX = _fluidForce * u[fluidIndex] * mass;
-			if(forceX<0)forceX = -forceX;
-			if(forceX>1)forceX = 1;
+			//float forceX = _fluidForce * u[fluidIndex] * mass;
+			//if(forceX<0)forceX = -forceX;
+			//if(forceX>1)forceX = 1;
 
-			float forceY = _fluidForce * v[fluidIndex] * mass;
-			if(forceY<0)forceY = -forceY;
-			if(forceY>1)forceY = 1;
+			//float forceY = _fluidForce * v[fluidIndex] * mass;
+			//if(forceY<0)forceY = -forceY;
+			///if(forceY>1)forceY = 1;
 
-			vx = u[fluidIndex] * screenW * forceX + vx * (1-forceX) + gravityX * timeDelta;
-			vy = v[fluidIndex] * screenH * forceY + vy * (1-forceY) + gravityY * timeDelta;
+			//vx = u[fluidIndex] * screenW * forceX + vx * (1-forceX) + gravityX * timeDelta;
+			//vy = v[fluidIndex] * screenH * forceY + vy * (1-forceY) + gravityY * timeDelta;
+
+			float forceX = u[fluidIndex];
+			float forceY = v[fluidIndex];
+			vx += (gravityX + forceX * mass * _fluidForce * screenW) * timeDelta;
+			vy += (gravityY + forceY * mass * _fluidForce * screenH) * timeDelta;
 
 			float newX = x + vx;
-			float newY = y + vy;
+			float newY = y + vy;	
 			x = newX * timeDelta + x * (1 - timeDelta);
 			y = newY * timeDelta + y * (1 - timeDelta);
 
 			if (x < 1.) {
-				if (wrap_x == 1) {
+				if (edgeTypeX == 1) {
 					x = screenW-1;
-				} else {
+				} else if(edgeTypeX == 0) {
 					x = timeDelta;
 					vx *= -timeDelta;
+				} else{
+					age = 0;
 				}
 			}
 			else if (x > screenW) {
-				if (wrap_x == 1) {
+				if (edgeTypeX == 1) {
 					x = timeDelta;
-				} else {
+				} else if(edgeTypeX == 0) {
 					x = screenW - 1;
 					vx *= -timeDelta;
+				} else{
+					age = 0;
 				}
 			}
 
 			if (y < 1.) {
-				if (wrap_y == 1) {
+				if (edgeTypeY == 1) {
 					y = screenH - 1;
-				} else {
+				} else if(edgeTypeY == 0) {
 					y = timeDelta;
 					vy *= -timeDelta;
+				} else{
+					age = 0;
 				}
 			}
 			else if (y > screenH) {
-				if (wrap_y == 1) {
+				if (edgeTypeY == 1) {
 					y = timeDelta;
-				} else {
+				} else if(edgeTypeY == 0) {
 					y = screenH - 1;
 					vy *= -timeDelta;
+				} else{
+					age = 0;
 				}
 			}
 
@@ -788,12 +803,12 @@ void setBoundary(int bound, register double *x)
 	dst2 = FLUID_IX(gridW+1, 1 );
 	src2 = FLUID_IX(gridW, 1);
 
-	if( wrap_x == 1 ) {
+	if( edgeTypeX == 1 ) {
 		src1 ^= src2;
 		src2 ^= src1;
 		src1 ^= src2;
 	}
-	if( bound == 1 && wrap_x == 0 ) {
+	if( bound == 1 && edgeTypeX == 0 ) {
 		for (i = gridH; i > 0; --i )
 		{
 			x[dst1] = -x[src1];     dst1 += step;   src1 += step;
@@ -812,12 +827,12 @@ void setBoundary(int bound, register double *x)
 	dst2 = FLUID_IX(1, gridH+1);
 	src2 = FLUID_IX(1, gridH);
 
-	if( wrap_y == 1 ) {
+	if( edgeTypeY == 1 ) {
 		src1 ^= src2;
 		src2 ^= src1;
 		src1 ^= src2;
 	}
-	if( bound == 2 && wrap_y == 0 ) {
+	if( bound == 2 && edgeTypeY == 0 ) {
 		for (i = gridW; i > 0; --i )
 		{
 		        x[dst1++] = -x[src1++];
@@ -840,12 +855,12 @@ void setBoundary(int bound, register double *x)
 
 void setBoundaryRGB()
 {
-	if( wrap_x == 0 && wrap_y == 0 ) return;
+	if( (edgeTypeX == 0 && edgeTypeY == 0) || (edgeTypeX == 2 && edgeTypeY == 2) ) return;
 
 	int dst1, dst2, src1, src2, i;
 	const int step = FLUID_IX(0, 1) - FLUID_IX(0, 0);
 
-	if ( wrap_x == 1 ) {
+	if ( edgeTypeX == 1 ) {
 		dst1 = FLUID_IX(0, 1);
 		src1 = FLUID_IX(1, 1);
 		dst2 = FLUID_IX(gridW+1, 1 );
@@ -862,7 +877,7 @@ void setBoundaryRGB()
 		}
 	}
 
-	if ( wrap_y == 1 ) {
+	if ( edgeTypeY == 1 ) {
 		dst1 = FLUID_IX(1, 0);
 		src1 = FLUID_IX(1, 1);
 		dst2 = FLUID_IX(1, gridH+1);
@@ -1137,45 +1152,48 @@ int addEmitter(double x, double y, double rate, double emitterDecay, double part
 	return emitterIndex;
 }
 
-void setForce(double tx, double ty, double dx, double dy){
+void setForce(int x, int y, double dx, double dy){
+	
+	x += 1;
+	y += 1;
 
-	int nx = (int)(tx * (gridW+2));
-	int ny = (int)(ty * (gridH+2));
-	if(nx < 1) nx=1; else if(nx > gridW) nx = gridW;
-	if(ny < 1) ny=1; else if(ny > gridH) ny = gridH;
+	if(x < 1) x=1; else if(x > gridW) x = gridW;
+	if(y < 1) y=1; else if(y > gridH) y = gridH;
 
-	int index = (nx + (gridW+2) * ny);
-	*(uOld + index) += dx;
-	*(vOld + index) += dy;
+	int index = (x + (gridW+2) * y);
+	*(u + index) = dx;
+	*(v + index) = dy;
 }
 
 
-void setColour(double tx, double ty, float r, float g, float b){
+void setColour(int x, int y, float r, float g, float b){
+	
+	x += 1;
+	y += 1;
+	
+	if(x < 1) x=1; else if(x > gridW) x = gridW;
+	if(y < 1) y=1; else if(y > gridH) y = gridH;
 
-	int nx = (int)(tx * (gridW+2));
-	int ny = (int)(ty * (gridH+2));
-	if(nx < 1) nx=1; else if(nx > gridW) nx = gridW;
-	if(ny < 1) ny=1; else if(ny > gridH) ny = gridH;
-
-	int index = (nx + (gridW+2) * ny);
-	*(rOld + index) += r;
-	*(gOld + index) += g;
-	*(bOld + index) += b;
+	int index = (x + (gridW+2) * y);
+	*(rOld + index) = r;
+	*(gOld + index) = g;
+	*(bOld + index) = b;
 }
 
-void setForceAndColour(double tx, double ty, double dx, double dy, float r, float g, float b){
+void setForceAndColour(int x, int y, double dx, double dy, float r, float g, float b){
+	
+	x += 1;
+	y += 1;
+	
+	if(x < 1) x=1; else if(x > gridW) x = gridW;
+	if(y < 1) y=1; else if(y > gridH) y = gridH;
 
-	int nx = (int)(tx * (gridW+2));
-	int ny = (int)(ty * (gridH+2));
-	if(nx < 1) nx=1; else if(nx > gridW) nx = gridW;
-	if(ny < 1) ny=1; else if(ny > gridH) ny = gridH;
-
-	int index = (nx + (gridW+2) * ny);
-	*(uOld + index) += dx;
-	*(vOld + index) += dy;
-	*(rOld + index) += r;
-	*(gOld + index) += g;
-	*(bOld + index) += b;
+	int index = (x + (gridW+2) * y);
+	*(u + index) = dx;
+	*(v + index) = dy;
+	*(rOld + index) = r;
+	*(gOld + index) = g;
+	*(bOld + index) = b;
 }
 
 double* getParticleEmittersPos()
@@ -1203,10 +1221,18 @@ int* getFluidImagePos()
 {
 	return fluidsImage;
 }
-void setWrapping(int wrapX, int wrapY)
+double* getUPos()
 {
-	wrap_x = wrapX;
-	wrap_y = wrapY;
+	return u;
+}
+double* getVPos()
+{
+	return v;
+}
+void setEdgeTypes(int edgeX, int edgeY)
+{
+	edgeTypeX = edgeX;
+	edgeTypeY = edgeY;
 }
 
 void setFluidForce(double fluidForce)

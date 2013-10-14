@@ -30,12 +30,12 @@ void setEmitterProps(int index,  double x, double y, double rate, double emitter
 void setEmitterVariance(int index, double xSpread, double ySpread, double ageVar, double massVar, double vxVar, double vyVar);
 void clearParticles();
 
-void setForce(double tx, double ty, double dx, double dy);
-void setColour(double tx, double ty, float r, float g, float b);
-void setForceAndColour(double tx, double ty, double dx, double dy, float r, float g, float b);
+void setForce(int x, int y, double dx, double dy);
+void setColour(int x, int y, float r, float g, float b);
+void setForceAndColour(int x, int y, double dx, double dy, float r, float g, float b);
 void setGravity(float x, float y);
 
-void setWrapping(int wrapX, int wrapY);
+void setEdgeTypes(int edgeX, int edgeY);
 
 void setFluidForce(double fluidForce);
 void setColorDiffusion(double colorDiffusion);
@@ -57,6 +57,8 @@ int* getParticlesMaxPos();
 double* getParticleEmittersPos();
 float* getParticlesDataPos();
 int* getFluidImagePos();
+double* getUPos();
+double* getVPos();
 
 //-----------------------------------------------------------------------------
 

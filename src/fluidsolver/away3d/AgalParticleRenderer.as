@@ -84,12 +84,12 @@ package fluidsolver.away3d
 			}
 		}
 		
-		public function setAlpha(emitter:int, minAlpha:Number, maxAlpha:Number):void {
+		public function setAlpha(emitter:int, birthAlpha:Number, deathAlpha:Number):void {
 			var emitterSets:Vector.<FluidAnimationSet> = _animationSetByEmitter[emitter];
 			for (var i:int = 0; i < emitterSets.length; ++i ) {
 				var animSet:FluidAnimationSet = emitterSets[i];
-				animSet.minAlpha = minAlpha;
-				animSet.maxAlpha = maxAlpha;
+				animSet.deathAlpha = deathAlpha;
+				animSet.birthAlpha = birthAlpha;
 			}
 		}
 		

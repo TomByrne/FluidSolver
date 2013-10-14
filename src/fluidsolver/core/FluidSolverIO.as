@@ -7,7 +7,9 @@ package fluidsolver.core
 	import flash.utils.setTimeout;
 	import flash.utils.Timer;
 	import flash.utils.getTimer;
+	import fluidsolver.core.crossbridge.CModule;
 	import fluidsolver.core.crossbridge.FluidSolverCrossbridge;
+	import fluidsolver.utils.ConsoleProxy;
 	/**
 	 * ...
 	 * @author Tom Byrne
@@ -19,10 +21,14 @@ package fluidsolver.core
 		private var _lastTime:int;
 		private var _updateHandler:Function;
 		private var _speed:Number = 1;
+		private var _gridW:int;
+		private var _gridH:int;
 		
 		public function FluidSolverIO() 
 		{
 			setFPS(30);
+			
+			CModule.vfs.console = new ConsoleProxy(trace);
 		}
 		public function setFPS(value:int, returnHandler:Function = null):void {
 			if(_updateTimer){
@@ -55,6 +61,8 @@ package fluidsolver.core
 			_lastTime = getTimer();
 			_updateTimer.start();
 			_updateHandler = updateHandler;
+			_gridW = gridWidth;
+			_gridH = gridHeight;
 		}
 		public function addEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function = null):void {
 			var ret:int = FluidSolverCrossbridge.addEmitter(x, y, rate, emDecay, partDecay, initVX, initVY, initMass);
@@ -76,24 +84,24 @@ package fluidsolver.core
 			FluidSolverCrossbridge.clearParticles();
 			if(returnHandler!=null)returnHandler();
 		}
-		public function setForce(tx:Number, ty:Number, dx:Number, dy:Number, returnHandler:Function = null):void {
-			FluidSolverCrossbridge.setForce(tx, ty, dx, dy);
+		public function setForce(x:int, y:int, dx:Number, dy:Number, returnHandler:Function = null):void {
+			FluidSolverCrossbridge.setForce(x, y, dx, dy);
 			if(returnHandler!=null)returnHandler();
 		}
-		public function setColour(tx:Number, ty:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void {
-			FluidSolverCrossbridge.setColour(tx, ty, r, g, b);
+		public function setColour(x:int, y:int, r:Number, g:Number, b:Number, returnHandler:Function = null):void {
+			FluidSolverCrossbridge.setColour(x, y, r, g, b);
 			if(returnHandler!=null)returnHandler();
 		}
-		public function setForceAndColour(tx:Number, ty:Number, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void {
-			FluidSolverCrossbridge.setForceAndColour(tx, ty, dx, dy, r, g, b);
+		public function setForceAndColour(x:int, y:int, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void {
+			FluidSolverCrossbridge.setForceAndColour(x, y, dx, dy, r, g, b);
 			if(returnHandler!=null)returnHandler();
 		}
 		public function setGravity(x:Number, y:Number, returnHandler:Function = null):void {
 			FluidSolverCrossbridge.setGravity(x, y);
 			if(returnHandler!=null)returnHandler();
 		}
-		public function setWrapping(x:Boolean, y:Boolean, returnHandler:Function = null):void {
-			FluidSolverCrossbridge.setWrapping(x?1:0, y?1:0);
+		public function setEdgeTypes(x:int, y:int, returnHandler:Function = null):void {
+			FluidSolverCrossbridge.setEdgeTypes(x, y);
 			if(returnHandler!=null)returnHandler();
 		}
 		
@@ -124,6 +132,12 @@ package fluidsolver.core
 		}
 		public function get fluidImagePos():int {
 			return FluidSolverCrossbridge.getFluidImagePos();
+		}
+		public function get uPos():int {
+			return FluidSolverCrossbridge.getUPos();
+		}
+		public function get vPos():int {
+			return FluidSolverCrossbridge.getVPos();
 		}
 		
 		public function get speed():Number {
@@ -173,6 +187,13 @@ package fluidsolver.core
 		}
 		public function set fluidForce(value:Number):void {
 			FluidSolverCrossbridge.setFluidForce(value);
+		}
+		
+		public function get gridWidth():int {
+			return _gridW;
+		}
+		public function get gridHeight():int {
+			return _gridH;
 		}
 	}
 

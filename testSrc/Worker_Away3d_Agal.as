@@ -35,11 +35,13 @@ package
 			
 			//Debug.active = true;
 			
-			renderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
-			renderer.setScale(1, 0.5, 0.05);
+			renderer = new AgalParticleRenderer(PARTICLES, [makeMaterial1, makeMaterial2, makeMaterial2], -RENDER_W / 2, RENDER_H / 2);
+			renderer.setScale(1, 2, 4);
+			renderer.setAlpha(1, 1, 0);
+			renderer.setColorTrans(1, 1, 1, 2);
 			
-			renderer.setScale(2, 2, 0.05);
-			renderer.setAlpha(2, 0.5, 0);
+			renderer.setScale(2, 2, 4);
+			renderer.setAlpha(2, 1, 0);
 			renderer.setColorTrans(2, 1, 2);
 			
 			view.scene.addChild(renderer.display);
@@ -59,9 +61,10 @@ package
 		}
 		
 		private function makeMaterial2():MaterialBase {
-			var material:TextureMaterial = new TextureMaterial(texture2, false);
+			var material:TextureMaterial = new TextureMaterial(texture1, false);
 			material.alphaBlending = true;
-			material.alpha = 1;
+			material.alpha = 0.1;
+			material.blendMode = BlendMode.ADD;
 			return material;
 		}
 		
@@ -69,12 +72,12 @@ package
 			super.onEnterFrame(e);
 			view.render();
 		}
-		override protected function onMouseMove(e:MouseEvent):void 
+		/*override protected function onMouseMove(e:MouseEvent):void 
 		{
 			super.onMouseMove(e);
 			
 			renderer.setColorTrans(1, stage.mouseX / stage.stageWidth, 1,1, 0, -stage.mouseY / stage.stageHeight , 0);
-		}
+		}*/
 	}
 
 }

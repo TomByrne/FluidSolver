@@ -29,8 +29,8 @@ package fluidsolver.away3d
 		public var minScale:Number = 1;
 		public var maxScale:Number = 5;
 		
-		public var minAlpha:Number = 0;
-		public var maxAlpha:Number = 1;
+		public var deathAlpha:Number = 0;
+		public var birthAlpha:Number = 1;
 		
 		public var offsetX:Number = 0;
 		public var offsetY:Number = 0;
@@ -59,7 +59,7 @@ package fluidsolver.away3d
 			var minScale:String = "vc5.x";
 			var scaleRange:String = "vc5.y";
 			var offsets:String = "vc5.zw";
-			var const0:String = "vc4.x";
+			var bigNum:String = "vc4.x";
 			var const1:String = "vc4.y";
 			var const2:String = "vc4.z";
 			var byteIndex:String = "vc4.w";
@@ -74,15 +74,15 @@ package fluidsolver.away3d
 					"mov " + data1 + ", vc[" + temp + ".x] \n" + 						// get particle data 1
 					"mov " + data2 + ", vc[" + temp + ".x] \n" +  						// get particle data 2
 					
-					"sub "+temp+".z, "+const1+", "+data1+".x \n" +  					// 1 - alpha
-					"mul "+temp+".z, "+temp+".z, "+scaleRange+" \n" +  					// multiply inv alpha by scaleRange
+					"sub "+temp+".z, "+const1+", "+data1+".x \n" +  					// 1 - age
+					"mul "+temp+".z, "+temp+".z, "+scaleRange+" \n" +  					// multiply inv age by scaleRange
 					"add "+temp+".z, "+temp+".z, "+minScale+" \n" +     				// add min scale
 					"mul " + endPos + ".xy, " + endPos + ".xy, " + temp + ".z \n" +     // scale
 					
 					"add " + endPos + ".x, " + endPos + ".x,"+data1+".y \n" +			// set x pos
 					"sub " + endPos + ".y, " + endPos + ".y,"+data1+".z \n" +			// set y pos
 					"add " + endPos + ".xy, " + endPos + ".xy,"+offsets+" \n" +			// add offsets
-					"mov " + endPos + ".z, " + const0 + " \n" +							// set z to 0
+					"div " + endPos + ".z, " + endPos + ".z, " + bigNum + " \n" +		// divide z by big number (having all at z=0 is a preformance hit)
 					
 					"mov v1, " + data1+" \n" +
 					"mov v2, " + data2+" \n";
@@ -97,9 +97,9 @@ package fluidsolver.away3d
 			var context : Context3D = stage3DProxy._context3D;
 			if (_particleData) {
 				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 5, Vector.<Number>([minScale, maxScale-minScale, offsetX, offsetY]), 1);
-				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, Vector.<Number>([0, 1, 2, 6]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, Vector.<Number>([1000000, 1, 2, 6]), 1);
 				
-				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 4, Vector.<Number>([1, minAlpha, maxAlpha-minAlpha, 0]), 1);
+				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 4, Vector.<Number>([1, deathAlpha, birthAlpha-deathAlpha, 0]), 1);
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 5, Vector.<Number>([redMultiply, greenMultiply, blueMultiply, 0]), 1);
 				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 6, Vector.<Number>([redOffset, greenOffset, blueOffset, 0]), 1);
 				
@@ -123,7 +123,7 @@ package fluidsolver.away3d
 		public function getAGALFragmentCode(pass:MaterialPassBase, shadedTarget:String, profile:String):String
 		{
 			var const1:String = "fc4.x";
-			var minAlpha:String = "fc4.y";
+			var deathAlpha:String = "fc4.y";
 			var alphaRange:String = "fc4.z";
 			
 			var colorTrans:String = "";
@@ -138,9 +138,9 @@ package fluidsolver.away3d
 			
 			if(pass.material.blendMode == BlendMode.MULTIPLY || pass.material.blendMode == BlendMode.DARKEN){
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
-						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
+						"add ft1.w, ft1.w, " + deathAlpha + " \n" +  // add deathAlpha to a
 						
-						"sub ft2.x, "+const1+", ft1.w \n" +   // 1 - alpha
+						"sub ft2.x, "+const1+", ft1.w \n" +   // 1 - age
 						
 						"mul ft0.x, ft0.x, ft1.w \n" +   // multiply r by alpha
 						"add ft0.x, ft0.x, ft2.x \n" +  // add 1- alpha to r
@@ -153,7 +153,7 @@ package fluidsolver.away3d
 						
 			}else if (pass.material.blendMode == BlendMode.ADD || pass.material.blendMode == BlendMode.LIGHTEN) {
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
-						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
+						"add ft1.w, ft1.w, " + deathAlpha + " \n" +  // add deathAlpha to a
 						
 						"mul ft0.x, ft0.x, ft1.w \n" +  // multiply r by a
 						"mul ft0.y, ft0.y, ft1.w \n" +  // multiply b by a
@@ -161,7 +161,7 @@ package fluidsolver.away3d
 						
 			}else if(pass.material.blendMode == BlendMode.NORMAL){
 				return  "mul ft1.w, v1.x, " + alphaRange + " \n" +  // multiply a by alphaRange
-						"add ft1.w, ft1.w, " + minAlpha + " \n" +  // add minAlpha to a
+						"add ft1.w, ft1.w, " + deathAlpha + " \n" +  // add deathAlpha to a
 						
 						"mul ft0.w, ft0.w, ft1.w \n"  + colorTrans;  // multiply a by particle alpha
 				

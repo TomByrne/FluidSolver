@@ -27,6 +27,8 @@ package  fluidsolver.core.worker
 		public var _isInited:Boolean;
 		private var _lastHandlerId:int = 0;
 		private var _returnHandlerLookup:Dictionary = new Dictionary();
+		private var _gridW:int;
+		private var _gridH:int;
 		
 		private var _pendingCalls:Array;
 		
@@ -60,6 +62,8 @@ package  fluidsolver.core.worker
 			appendCall("getSolverIterations",[],registerCall(_gotSolverIterations));
 			appendCall("getColorDiffusion",[],registerCall(_gotColorDiffusion));
 			appendCall("getFluidForce",[],registerCall(_gotFluidForce));
+			_gridW = gridWidth;
+			_gridH = gridHeight;
 		}
 		public function addEmitter(x:Number, y:Number, rate:Number, emDecay:Number, partDecay:Number, initVX:Number, initVY:Number, initMass:Number, returnHandler:Function=null):void {
 			appendCall("addEmitter",[x, y, rate, emDecay, partDecay, initVX, initVY, initMass],registerCall(returnHandler));
@@ -76,20 +80,20 @@ package  fluidsolver.core.worker
 		public function clearParticles(returnHandler:Function=null):void {
 			appendCall("clearParticles",[],registerCall(returnHandler));
 		}
-		public function setForce(tx:Number, ty:Number, dx:Number, dy:Number, returnHandler:Function=null):void {
-			appendCall("setForce",[tx, ty, dx, dy],registerCall(returnHandler));
+		public function setForce(x:int, y:int, dx:Number, dy:Number, returnHandler:Function=null):void {
+			appendCall("setForce",[x, y, dx, dy],registerCall(returnHandler));
 		}
-		public function setColour(tx:Number, ty:Number, r:Number, g:Number, b:Number, returnHandler:Function=null):void{
-			appendCall("setColour",[tx, ty, r, g, b],registerCall(returnHandler));
+		public function setColour(x:int, y:int, r:Number, g:Number, b:Number, returnHandler:Function=null):void{
+			appendCall("setColour",[x, y, r, g, b],registerCall(returnHandler));
 		}
-		public function setForceAndColour(tx:Number, ty:Number, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function=null):void{
-			appendCall("setForceAndColour",[tx, ty, dx, dy, r, g, b],registerCall(returnHandler));
+		public function setForceAndColour(x:int, y:int, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function=null):void{
+			appendCall("setForceAndColour",[x, y, dx, dy, r, g, b],registerCall(returnHandler));
 		}
 		public function setGravity(x:Number, y:Number, returnHandler:Function=null):void{
 			appendCall("setGravity",[x, y],registerCall(returnHandler));
 		}
-		public function setWrapping(x:Boolean, y:Boolean, returnHandler:Function=null):void{
-			appendCall("setWrapping",[x?1:0, y?1:0],registerCall(returnHandler));
+		public function setEdgeTypes(x:int, y:int, returnHandler:Function=null):void{
+			appendCall("setEdgeTypes",[x, y],registerCall(returnHandler));
 		}
 		
 		private function appendCall(methodName:String, args:Array, returnId:int):void {
@@ -195,6 +199,12 @@ package  fluidsolver.core.worker
 		public function get fluidImagePos():int {
 			return worker.getSharedProperty("fluidImagePos");
 		}
+		public function get uPos():int {
+			return worker.getSharedProperty("uPos");
+		}
+		public function get vPos():int {
+			return worker.getSharedProperty("vPos");
+		}
 		
 		
 		private function _gotViscosity(value:Number):void {
@@ -277,6 +287,13 @@ package  fluidsolver.core.worker
 		public function set fluidForce(value:Number):void {
 			_fluidForce = value;
 			appendCall("setFluidForce",[value],-1);
+		}
+		
+		public function get gridWidth():int {
+			return _gridW;
+		}
+		public function get gridHeight():int {
+			return _gridH;
 		}
 	}
 

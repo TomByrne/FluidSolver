@@ -20,11 +20,11 @@ package fluidsolver.core
 		function setEmitterVariance(index:int, xSpread:Number, ySpread:Number, ageVar:Number, massVar:Number, vxVar:Number, vyVar:Number, returnHandler:Function = null):void;
 		function updateSolver(timeDelta:Number, returnHandler:Function = null):void;
 		function clearParticles(returnHandler:Function = null):void;
-		function setForce(tx:Number, ty:Number, dx:Number, dy:Number, returnHandler:Function = null):void;
-		function setColour(tx:Number, ty:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
-		function setForceAndColour(tx:Number, ty:Number, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
+		function setForce(x:int, y:int, dx:Number, dy:Number, returnHandler:Function = null):void;
+		function setColour(x:int, y:int, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
+		function setForceAndColour(x:int, y:int, dx:Number, dy:Number, r:Number, g:Number, b:Number, returnHandler:Function = null):void;
 		function setGravity(x:Number, y:Number, returnHandler:Function = null):void;
-		function setWrapping(x:Boolean, y:Boolean, returnHandler:Function = null):void;
+		function setEdgeTypes(x:int, y:int, returnHandler:Function = null):void;
 		
 		function get speed():Number;
 		function set speed(value:Number):void;
@@ -47,6 +47,9 @@ package fluidsolver.core
 		function get fluidForce():Number;
 		function set fluidForce(value:Number):void;
 		
+		function get gridWidth():int;
+		function get gridHeight():int;
+		
 		function get sharedBytes():ByteArray;
 		function get emittersSetPos():int;
 		function get particlesCountPos():int;
@@ -55,6 +58,8 @@ package fluidsolver.core
 		function get maxParticlesPos():int;
 		function get particleEmittersPos():int;
 		function get fluidImagePos():int;
+		function get uPos():int;
+		function get vPos():int;
 	}
 	
 }

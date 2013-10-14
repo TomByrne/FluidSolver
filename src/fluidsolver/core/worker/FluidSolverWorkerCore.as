@@ -48,6 +48,9 @@ package  fluidsolver.core.worker
 			FluidSolverCrossbridge.updateSolver((time-_lastTime)/100 * _speed);
 			_lastTime = time;
 			
+			_worker.setSharedProperty("uPos", FluidSolverCrossbridge.getUPos());
+			_worker.setSharedProperty("vPos", FluidSolverCrossbridge.getVPos());
+			
 			var returnObject:Object = new Object();
 			returnObject.msg = "update";
 			_backToMain.send(returnObject);
@@ -109,6 +112,9 @@ package  fluidsolver.core.worker
 			
 				addEventListener(Event.ENTER_FRAME, onEnterFrame);
 				_lastTime = getTimer();
+			}else if (methName == "updateSolver") {
+				_worker.setSharedProperty("uPos", FluidSolverCrossbridge.getUPos());
+				_worker.setSharedProperty("vPos", FluidSolverCrossbridge.getVPos());
 			}
 			return ret;
 		}

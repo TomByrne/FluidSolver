@@ -6,6 +6,7 @@ package
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
+	import fluidsolver.core.FluidSolverEdgeType;
 	import fluidsolver.core.IFluidRenderer;
 	import fluidsolver.core.IFluidSolver;
 	
@@ -28,9 +29,9 @@ package
 		public static const RENDER_H:uint = 540;
 		public static const GRID_W:uint = 150;
 		
-		public static const VELOCITY_MULTIPLIER:Number = 100;
+		public static const VELOCITY_MULTIPLIER:Number = 200;
 		
-		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 400, 400]);
+		public static const PARTICLES:Vector.<int> = Vector.<int>([500, 1000, 1000]);
 		
 		protected var _fluidSolver:IFluidSolver;
 		protected var _fluidRenderer:IFluidRenderer;
@@ -55,19 +56,26 @@ package
 			_renderFluid = renderFluid;
 			_doParticles = doParticles;
 			
-			_fluidSolver.setupSolver(GRID_W, GRID_W / RENDER_W * RENDER_H, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES,  onFluidSetup, fluidUpdate);
+			var gridH:int = GRID_W / RENDER_W * RENDER_H;
+			_fluidSolver.setupSolver(GRID_W, gridH, RENDER_W, RENDER_H, renderFluid, isRGB, doParticles, PARTICLES,  onFluidSetup, fluidUpdate);
 			_fluidSolver.setFPS(30);
-			_fluidSolver.setGravity(0, 15);
-			//_fluidSolver.setWrapping(true, true);
-			_fluidSolver.fluidForce = 50;
+			_fluidSolver.setEdgeTypes(FluidSolverEdgeType.KILL, FluidSolverEdgeType.KILL);
+			_fluidSolver.fluidForce = 1;
+			//_fluidSolver.viscosity = 0;
 			
 			_fluidSolver.setEmitterVariance(0, 30, 30, 0.3, 0.7, 0, 0);
 			
-			_fluidSolver.setEmitterProps(1, 0.33, 0.5, 10, 1, 0.95, 0, 0, 1);
-			_fluidSolver.setEmitterVariance(1, 30, 30, 0, 0, 20, 0);
+			_fluidSolver.setEmitterProps(1, 0.49, 0.2, 100, 1, 0.9, -20, 40, 1);
+			_fluidSolver.setEmitterVariance(1, 30, 30, 0, 0, 60, 0);
 			
-			_fluidSolver.setEmitterProps(2, 0.66, 0.5, 10, 1, 0.95, 0, 0, 1);
-			_fluidSolver.setEmitterVariance(2, 30, 30, 0, 0, 20, 0);
+			_fluidSolver.setEmitterProps(2, 0.51, 0.2, 100, 1, 0.9, 20, 40, 1);
+			_fluidSolver.setEmitterVariance(2, 30, 30, 0, 0, 60, 0);
+			
+			/*for (var i:int = 0; i < GRID_W; ++i){
+				for (var j:int = 0; j < gridH; ++j) {
+					_fluidSolver.setForce(i, j,  0.02 * (i / GRID_W<0.5?1:-1),0);
+				}
+			}*/
 			
 			// set up the jet stream
 			/*const start:Number = 300;
@@ -88,8 +96,27 @@ package
 			_isInvalid = true;
 		}
 		
+		private var _row:int = 0;
+		private var _col:int = 0;
 		protected function onEnterFrame(e:Event):void {
 			if (!_isInvalid) return;
+			
+			var gridH:int = GRID_W / RENDER_W * RENDER_H;
+			
+			for (var j:int = 0; j < gridH; ++j) {
+				_fluidSolver.setForce(_col, j, 0, 0.02 * (j/ gridH < 0.5?1:-1));
+			}
+			_col++;
+			if (_col == GRID_W)_col = 0;
+			
+			/*_fluidSolver.setForce(_col, _row,  0.02 * (_col / GRID_W < 0.5?1: -1), 0);
+			_row++;
+			if (_row == gridH) {
+				_row = 0;
+				_col++;
+				if (_col == GRID_W)_col = 0;
+			}*/
+			
 			
 			_isInvalid = false;
 			_fluidRenderer.update();
@@ -101,13 +128,17 @@ package
 			var normX:Number = mouseX / RENDER_W;
 			var normY:Number = mouseY / RENDER_H;
 			
+			//_fluidSolver.setGravity(0, 200 * normX);
+			
 			var velX:Number = (mouseX - _lastMousePoint.x) / RENDER_W;
 			var velY:Number = (mouseY - _lastMousePoint.y) / RENDER_H;
-			if(_renderFluid){
-				_fluidSolver.setForceAndColour(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER, 1000, 30, 30);
+			var gridH:int = GRID_W / RENDER_W * RENDER_H;
+			/*if (_renderFluid) {
+				_fluidSolver.setColour(normX * GRID_W, normY * gridH, 1000, 30, 30);
+				//_fluidSolver.setForceAndColour(normX * GRID_W, normY * gridH, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER, 1000, 30, 30);
 			}else {
-				_fluidSolver.setForce(normX, normY, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
-			}
+				_fluidSolver.setForce(normX * GRID_W, normY * gridH, velX * VELOCITY_MULTIPLIER, velY * VELOCITY_MULTIPLIER);
+			}*/
 			if(_doParticles){
 				_fluidSolver.setEmitterProps(0, normX, normY, 5, 0.9, 0.9, 0, 0, 1);
 			}
